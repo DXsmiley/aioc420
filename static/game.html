@@ -2,31 +2,52 @@
 <html>
 	<head>
 		<title>AIOC 500</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
 
-		<h1>AIOC 500</h1>
+		<div class="wrapper">
 
-		<p id="yourName">You are nobody.</p>
+				<center>
+					<h1>AIOC 500</h1>
+				</center>
 
-		<h2>Controls</h2>
-		<button onclick="changePlayer(0);">Be player 1</button>
-		<button onclick="changePlayer(1);">Be player 2</button>
-		<button onclick="changePlayer(2);">Be player 3</button>
-		<button onclick="changePlayer(3);">Be player 4</button>
-		<br>
-		<button onclick="uniAction('clear');">Clear Table</button>
-		<button onclick="uniAction('redeal');">Redeal</button>
-		<button onclick="uniAction('grab');">Grab Kitty</button>
-	
-		<h2>Kitty</h2>
-		<p id="kittyCards">Nothing here...</p>
-	
-		<h2>Your Hand</h2>
-		<div id="myCards">Nothing here...</div>
-	
-		<h2>The Table</h2>
-		<div id="playedCards">Nothing here...</div>
+				<table>
+
+					<tr>
+
+						<td class="layout">
+							<p id="yourName">You are nobody.</p>
+
+							<h2>Controls</h2>
+							<button onclick="changePlayer(0);">Be player 1</button>
+							<button onclick="changePlayer(1);">Be player 2</button>
+							<button onclick="changePlayer(2);">Be player 3</button>
+							<button onclick="changePlayer(3);">Be player 4</button>
+							<br>
+							<button onclick="uniAction('clear');">Clear Table</button>
+							<button onclick="uniAction('redeal');">Redeal</button>
+							<button onclick="uniAction('grab');">Grab Kitty</button>
+						
+							<h2>Kitty</h2>
+							<p id="kittyCards">Nothing here...</p>
+						</td>
+
+						<td class="layout">
+							<h2>Your Hand</h2>
+							<div id="myCards">Nothing here...</div>
+						</td>
+						
+						<td class="layout">
+							<h2>The Table</h2>
+							<div id="playedCards">Nothing here...</div>
+						</td>
+
+					</tr>
+
+				</table>
+
+		</div>
 	
 	</body>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

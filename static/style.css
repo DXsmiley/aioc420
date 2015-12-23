@@ -1,0 +1,14 @@
+h1, h2, h3, h4, h5, h6, p, a, button {
+	font-family: "Ariel", sans-serif;
+}
+
+td.layout {
+	margin: 10px;
+	width: 30%;
+	vertical-align: top;
+}
+
+div.wrapper {
+	max-width: 1300px;
+	margin: 0px auto;
+}
