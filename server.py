@@ -90,6 +90,6 @@ for i in sys.argv[1:]:
 	if i[:2] == '-s':
 		server = i[2:]
 	if i[:2] == '-p':
-		server = int(i[2:])
+		port = int(i[2:])
 
 bottle.run(host = '0.0.0.0', port = port, server = server)
