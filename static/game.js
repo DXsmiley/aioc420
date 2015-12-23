@@ -1,4 +1,4 @@
-function playcard(card) {
+function cardPlay(card) {
 	console.log('Playing card: ', card)
 	$.post("/action",
 		{
@@ -10,11 +10,22 @@ function playcard(card) {
 	);
 }
 
-function clearTable() {
-	console.log('Clearing table...')
+function cardDisc(card) {
+	console.log('Playing card: ', card)
+	$.post("/action",
+		{
+			'action': 'discard',
+			'card': card,
+			'player': 0
+		},
+		function (d, s) {}
+	);
+}
+
+function uniAction(action_name) {
 	$.post('/action',
 		{
-			'action': 'clear',
+			'action': action_name,
 			'player': 0
 		},
 		function (d, s) {}
@@ -26,14 +37,19 @@ function getGameData() {
 		function (data, status) {
 			myhand = data.hands[0];
 			table = data.table;
-			kiddy = data.kiddy.legnth;
-			myhand_html = ' ';
+			$('kittyCards').html('<p>' + data.kitty.legnth + '</p>');
+			hand_html = '<table style="border: 1px solid">';
 			for (i in myhand) {
-				t = '<p><button onclick="playcard(\'CARD\');">CARD</button></p>';
-				myhand_html += t.replace("CARD", myhand[i]).replace("CARD", myhand[i]);
-				console.log(myhand[i], t);
+				hand_html += '<tr>';
+				hand_html += '<td>' + myhand[i] + '</td>';
+				hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">Play</button></td>';
+				hand_html += '<td><button onclick="cardDisc(\'' + myhand[i] + '\');">Discard</button></td>';
+				hand_html += '</tr>';
+				// console.log(myhand[i], t);
 			}
-			$("#myCards").html(myhand_html);
+			hand_html += '</table>';
+			console.log(hand_html);
+			$("#myCards").html(hand_html);
 			played_html = ' ';
 			for (i in table) {
 				played_html += '<p>CARD</p>'.replace('CARD', table[i]);

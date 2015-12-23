@@ -1,10 +1,38 @@
 import bottle
+import random
+
+deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
+			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
+			"Queen of Clubs", "King of Clubs", "Ace of Clubs",
+			"4 of Hearts", "5 of Hearts", "6 of Hearts", "7 of Hearts",
+			"8 of Hearts", "9 of Hearts", "10 of Hearts", "Jack of Hearts",
+			"Queen of Hearts", "King of Hearts", "Ace of Hearts",
+			"5 of Spades", "6 of Spades", "7 of Spades", "8 of Spades",
+			"9 of Spades", "10 of Spades", "Jack of Spades",
+			"Queen of Spades", "King of Spades", "Ace of Spades",
+			"4 of Diamonds", "5 of Diamonds", "6 of Diamonds",
+			"7 of Diamonds", "8 of Diamonds", "9 of Diamonds",
+			"10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds",
+			"King of Diamonds", "Ace of Diamonds"]
 
 game_data = {
-	'hands': [['Joker', 'Seven of Memes'], [], [], []],
-	'kiddy': [],
+	'hands': [[], [], [], []],
+	'kitty': [],
 	'table': []
 }
+
+# Thanks, Gongy!
+def actionDeal():
+	print('Dealing...')
+	game_data['hands'] = [[], [], [], []]
+	game_data['kitty'].clear()
+	game_data['table'].clear()
+	random.shuffle(deck_init)
+	for player in range(1, 5):
+		for c in range(10*(player-1), 10*player):
+			game_data['hands'][player-1].append(deck_init[c])
+	for c in range(40, 43):
+		game_data['kitty'].append(deck_init[c])
 
 @bottle.route('/')
 def page_index():
@@ -23,20 +51,22 @@ def page_action():
 	player = int(bottle.request.forms.get('player'))
 	# Play a card
 	if action == 'play':
-		game_data['table'].append(card)
-		game_data['hands'][player].remove(card)
+		if card in game_data['hands'][player]:
+			game_data['table'].append(card)
+			game_data['hands'][player].remove(card)
 	# Completely redeal cards
 	if action == 'redeal':
-		pass
+		actionDeal()
 		# Not complete
-	# Grab the kiddy
+	# Grab the kitty
 	if action == 'grab':
-		game_data['hands'][player] += game_data['kiddy']
-		game_data['kiddy'] = []
+		game_data['hands'][player] += game_data['kitty']
+		game_data['kitty'] = []
 	# Discard a card
 	if action == 'discard':
-		game_data['hands'][player].remove(card)
-		game_data['table'].append('??')
+		if card in game_data['hands'][player]:
+			game_data['hands'][player].remove(card)
+			game_data['table'].append('(discarded)')
 	# Clear the table
 	if action == 'clear':
 		game_data['table'] = ['(cleared)'] * len(game_data['table'])

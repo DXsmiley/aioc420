@@ -6,10 +6,12 @@
 	<body>
 		<h1>You are not playing</h1>
 		<h2>Controls</h2>
-		<button onclick="clearTable();">Clear Table</button>
-		<button>Redeal</button>
+		<button onclick="uniAction('clear');">Clear Table</button>
+		<button onclick="uniAction('redeal');">Redeal</button>
 		<button>Grab Kiddy</button>
-		<button>Discard Cards</button>
+		<!-- <button>Discard Cards</button> -->
+		<h2>Kitty</h2>
+		<p id="kittyCards">Nothing here...</p>
 		<h2>Your cards</h2>
 		<div id="myCards">Nothing here...</div>
 		<h2>Played Cards</h2>
