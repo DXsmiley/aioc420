@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>AIOC 500!</title>
+		<title>AIOC 500</title>
 	</head>
 	<body>
-		<h1>You are not playing</h1>
+
+		<h1>AIOC 500</h1>
+
+		<p id="yourName">You are nobody.</p>
+
 		<h2>Controls</h2>
+		<button onclick="changePlayer(0);">Be player 1</button>
+		<button onclick="changePlayer(1);">Be player 2</button>
+		<button onclick="changePlayer(2);">Be player 3</button>
+		<button onclick="changePlayer(3);">Be player 4</button>
+		<br>
 		<button onclick="uniAction('clear');">Clear Table</button>
 		<button onclick="uniAction('redeal');">Redeal</button>
-		<!-- Non-functional -->
 		<button onclick="uniAction('grab');">Grab Kitty</button>
+	
 		<h2>Kitty</h2>
 		<p id="kittyCards">Nothing here...</p>
+	
 		<h2>Your Hand</h2>
 		<div id="myCards">Nothing here...</div>
+	
 		<h2>The Table</h2>
 		<div id="playedCards">Nothing here...</div>
+	
 	</body>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="./game.js"></script>

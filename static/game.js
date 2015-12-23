@@ -1,24 +1,31 @@
 var last_gamedata_version = -1;
+var player_id = -1;
+
+function changePlayer(pid) {
+	player_id = pid;
+	last_gamedata_version = -1;
+	$("#yourName").text("You are player " + (pid + 1));
+}
 
 function cardPlay(card) {
-	console.log('Playing card: ', card)
+	// console.log('Playing card: ', card)
 	$.post("/action",
 		{
 			'action': 'play',
 			'card': card,
-			'player': 0
+			'player': player_id
 		},
 		function (d, s) {}
 	);
 }
 
 function cardDisc(card) {
-	console.log('Playing card: ', card)
+	// console.log('Playing card: ', card)
 	$.post("/action",
 		{
 			'action': 'discard',
 			'card': card,
-			'player': 0
+			'player': player_id
 		},
 		function (d, s) {}
 	);
@@ -28,7 +35,7 @@ function uniAction(action_name) {
 	$.post('/action',
 		{
 			'action': action_name,
-			'player': 0
+			'player': player_id
 		},
 		function (d, s) {}
 	);
@@ -37,8 +44,8 @@ function uniAction(action_name) {
 function getGameData() {
 	$.get("/gamestate",
 		function (data, status) {
-			if (data.version_id != last_gamedata_version) {
-				var myhand = data.hands[0];
+			if (player_id != -1 && data.version_id != last_gamedata_version) {
+				var myhand = data.hands[player_id];
 				var table = data.table;
 				// console.log(data.kitty, data.kitty.length);
 				$('#kittyCards').text(data.kitty.length + ' cards');
