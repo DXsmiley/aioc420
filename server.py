@@ -18,7 +18,8 @@ deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 game_data = {
 	'hands': [[], [], [], []],
 	'kitty': [],
-	'table': []
+	'table': [],
+	'version_id': 0
 }
 
 # Thanks, Gongy!
@@ -70,6 +71,8 @@ def page_action():
 	# Clear the table
 	if action == 'clear':
 		game_data['table'] = ['(cleared)'] * len(game_data['table'])
+	# Increment version counter
+	game_data['version_id'] += 1
 	# Return the new game state
 	return page_gamestate()
 
