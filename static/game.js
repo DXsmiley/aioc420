@@ -40,7 +40,8 @@ function getGameData() {
 			if (data.version_id != last_gamedata_version) {
 				var myhand = data.hands[0];
 				var table = data.table;
-				$('kittyCards').html('<p>' + data.kitty.legnth + '</p>');
+				// console.log(data.kitty, data.kitty.length);
+				$('#kittyCards').text(data.kitty.length + ' cards');
 				hand_html = '<table style="border: 1px solid">';
 				for (i in myhand) {
 					hand_html += '<tr>';
