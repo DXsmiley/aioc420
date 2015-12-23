@@ -16,11 +16,11 @@ def page_index():
 def page_gamestate():
 	return game_data
 
-@bottle.route('/action')
+@bottle.post('/action')
 def page_action():
 	action = bottle.request.forms.get('action')
-	card = bottle.redeal.forms.get('card')
-	player = int(bottle.redeal.forms.get('player'))
+	card = bottle.request.forms.get('card')
+	player = int(bottle.request.forms.get('player'))
 	# Play a card
 	if action == 'play':
 		game_data['table'].append(card)
@@ -39,7 +39,7 @@ def page_action():
 		game_data['table'].append('??')
 	# Clear the table
 	if action == 'clear':
-		game_data['table'] = ['??'] * len(game_data['table'])
+		game_data['table'] = ['(cleared)'] * len(game_data['table'])
 	# Return the new game state
 	return page_gamestate()
 
