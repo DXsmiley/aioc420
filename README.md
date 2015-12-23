@@ -13,6 +13,12 @@ Run the following comands in terminal:
 
 Then have fun.
 
+### Selecting internal server
+
+Bottle relies on an underlying web server (which, by default, it supplies itself). You can change this with the -s command line argument. For example, `python server.py -spaste` will run the server and use paste as the underlying server.
+
+This requires you to install the respective server with pip.
+
 ## Contibuting
 
 Use Git or something.
