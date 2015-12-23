@@ -47,6 +47,7 @@ function getGameData() {
 			if (player_id != -1 && data.version_id != last_gamedata_version) {
 				var myhand = data.hands[player_id];
 				var table = data.table;
+				table.reverse();
 				// console.log(data.kitty, data.kitty.length);
 				$('#kittyCards').text(data.kitty.length + ' cards');
 				hand_html = '<table style="border: 1px solid">';
@@ -63,7 +64,9 @@ function getGameData() {
 				$("#myCards").html(hand_html);
 				var played_html = '';
 				for (i in table) {
-					played_html += '<p>CARD</p>'.replace('CARD', table[i]);
+					var pid = table[i][0];
+					var card = table[i][1];
+					played_html += '<p>Player ' + (pid + 1) + ': ' + card + '</p>';
 				}
 				$("#playedCards").html(played_html);
 				last_gamedata_version = data.version_id

@@ -53,12 +53,11 @@ def page_action():
 	# Play a card
 	if action == 'play':
 		if card in game_data['hands'][player]:
-			game_data['table'].append(card)
+			game_data['table'].append([player, card])
 			game_data['hands'][player].remove(card)
 	# Completely redeal cards
 	if action == 'redeal':
 		actionDeal()
-		# Not complete
 	# Grab the kitty
 	if action == 'grab':
 		game_data['hands'][player] += game_data['kitty']
@@ -67,10 +66,11 @@ def page_action():
 	if action == 'discard':
 		if card in game_data['hands'][player]:
 			game_data['hands'][player].remove(card)
-			game_data['table'].append('(discarded)')
+			game_data['table'].append([player, '(discarded)'])
 	# Clear the table
 	if action == 'clear':
-		game_data['table'] = ['(cleared)'] * len(game_data['table'])
+		game_data['table'].clear()
+		# game_data['table'] = [-1] * len(game_data['table'])
 	# Increment version counter
 	game_data['version_id'] += 1
 	# Return the new game state
