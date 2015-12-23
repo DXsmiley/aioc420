@@ -1,5 +1,6 @@
 import bottle
 import random
+import sys
 
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
@@ -81,4 +82,11 @@ def page_action():
 def page_static(filename):
 	return bottle.static_file(filename, root='./static/')
 
-bottle.run(host = '0.0.0.0', port = 8080)
+# Select underlying server
+server = 'wsgiref'
+
+for i in sys.argv[1:]:
+	if i[:2] == '-s':
+		server = i[2:]
+
+bottle.run(host = '0.0.0.0', port = 8080, server = server)
