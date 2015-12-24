@@ -18,6 +18,7 @@
 
 						<td class="layout">
 							<p id="yourName">You are nobody.</p>
+							<p id="trumpSuit">There is no trump suit.</p>
 
 							<h2>Controls</h2>
 							<button onclick="changePlayer(0);">Be player 1</button>
@@ -28,6 +29,13 @@
 							<button onclick="uniAction('clear');">Clear Table</button>
 							<button onclick="uniAction('redeal');">Redeal</button>
 							<button onclick="uniAction('grab');">Grab Kitty</button>
+							<br>
+							<h3>Set Trump Suit</h3>
+							<button onclick="setTrump('No Trump');">No Trump</button>
+							<button onclick="setTrump('Spades');">Spades</button>
+							<button onclick="setTrump('Clubs');">Clubs</button>
+							<button onclick="setTrump('Hearts');">Hearts</button>
+							<button onclick="setTrump('Diamonds');">Diamonds</button>
 						
 							<h2>Kitty</h2>
 							<p id="kittyCards">Nothing here...</p>
