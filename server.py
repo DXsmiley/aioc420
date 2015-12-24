@@ -61,6 +61,7 @@ def actionDeal():
 			game_data['hands'][player-1].append(deck_init[c])
 	for c in range(40, 43):
 		game_data['kitty'].append(deck_init[c])
+	game_data['trump'] = 'No Trump'
 
 @bottle.route('/')
 def page_index():
@@ -79,6 +80,7 @@ def page_action():
 	action = bottle.request.forms.get('action')
 	card = bottle.request.forms.get('card')
 	player = int(bottle.request.forms.get('player'))
+	suit = bottle.request.forms.get('suit')
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
 		# Play a card
@@ -122,6 +124,8 @@ def page_action():
 					game_data['floor'].remove(i)
 					break
 			game_data['hands'][player].append(card)
+		if action == 'setTrump':
+			game_data['trump'] = suit
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk

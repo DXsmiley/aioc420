@@ -55,6 +55,7 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
+		$("#trumpSuit").text("The trump suit is " + data['trump']);
 		last_gamedata_version = data.version_id
 	}
 }
@@ -111,6 +112,17 @@ function uniAction(action_name) {
 		{
 			'action': action_name,
 			'player': player_id
+		},
+		updateGameView
+	);
+}
+
+function setTrump(suit) {
+	$.post('/action',
+		{
+			'action': 'setTrump',
+			'player': player_id,
+			'suit': suit
 		},
 		updateGameView
 	);
