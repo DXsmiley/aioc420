@@ -105,6 +105,9 @@ def page_action():
 		if action == 'clear':
 			game_data['table'].clear()
 			# game_data['table'] = [-1] * len(game_data['table'])
+		if action == 'pickup':
+			game_data['table'].remove([player, card])
+			game_data['hands'][player].append(card)
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk

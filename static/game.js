@@ -21,7 +21,7 @@ function updateGameView(data, status) {
 		table.reverse();
 		// console.log(data.kitty, data.kitty.length);
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		hand_html = '<table style="border: 1px solid">';
+		hand_html = '<table>';
 		for (i in myhand) {
 			hand_html += '<tr>';
 			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
@@ -33,12 +33,20 @@ function updateGameView(data, status) {
 		hand_html += '</table>';
 		// console.log(hand_html);
 		$("#myCards").html(hand_html);
-		var played_html = '';
+		var played_html = '<table>';
 		for (i in table) {
 			var pid = table[i][0];
 			var card = table[i][1];
-			played_html += '<p>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</p>';
+			played_html += '<tr>';
+			played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</td>';
+			if (pid == player_id) {
+				played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
+			} else {
+				played_html += '<td></td>';
+			}
+			played_html += '</tr>';
 		}
+		played_html += '</table>';
 		$("#playedCards").html(played_html);
 		last_gamedata_version = data.version_id
 	}
@@ -73,6 +81,17 @@ function cardDisc(card) {
 	$.post("/action",
 		{
 			'action': 'discard',
+			'card': card,
+			'player': player_id
+		},
+		updateGameView
+	);
+}
+
+function cardPickup(card) {
+	$.post("/action",
+		{
+			'action': 'pickup',
 			'card': card,
 			'player': player_id
 		},
