@@ -13,6 +13,24 @@ function makeCardText(card) {
 	return result;
 }
 
+function makeTableTable(cards) {
+	var played_html = '<table>';
+	for (i in cards) {
+		var pid = cards[i][0];
+		var card = cards[i][1];
+		played_html += '<tr>';
+		played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</td>';
+		if (pid == player_id) {
+			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
+		} else {
+			played_html += '<td></td>';
+		}
+		played_html += '</tr>';
+	}
+	played_html += '</table>';
+	return played_html;
+}
+
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
@@ -33,21 +51,8 @@ function updateGameView(data, status) {
 		hand_html += '</table>';
 		// console.log(hand_html);
 		$("#myCards").html(hand_html);
-		var played_html = '<table>';
-		for (i in table) {
-			var pid = table[i][0];
-			var card = table[i][1];
-			played_html += '<tr>';
-			played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</td>';
-			if (pid == player_id) {
-				played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
-			} else {
-				played_html += '<td></td>';
-			}
-			played_html += '</tr>';
-		}
-		played_html += '</table>';
-		$("#playedCards").html(played_html);
+		$("#playedCards").html(makeTableTable(data.table));
+		$("#floorCards").html(makeTableTable(data.floor));
 		last_gamedata_version = data.version_id
 	}
 }

@@ -37,6 +37,7 @@ game_data = {
 	'hands': [[], [], [], []],
 	'kitty': [],
 	'table': [],
+	'floor': [],
 	'version_id': 0
 }
 
@@ -56,8 +57,9 @@ def gameStateSave():
 def actionDeal():
 	print('Dealing...')
 	game_data['hands'] = [[], [], [], []]
-	game_data['kitty'].clear()
-	game_data['table'].clear()
+	game_data['kitty'] = []
+	game_data['table'] = []
+	game_data['floor'] = []
 	random.shuffle(deck_init)
 	for player in range(1, 5):
 		for c in range(10*(player-1), 10*player):
@@ -103,7 +105,8 @@ def page_action():
 				game_data['table'].append([player, '(discarded)'])
 		# Clear the table
 		if action == 'clear':
-			game_data['table'].clear()
+			game_data['floor'] = game_data['table']
+			game_data['table'] = []
 			# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
 			game_data['table'].remove([player, card])
