@@ -16,6 +16,22 @@ deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds",
 			"King of Diamonds", "Ace of Diamonds"]
 
+card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
+			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
+			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
+			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
+			"6 of Hearts": 12, "7 of Hearts": 13, "8 of Hearts": 14,
+			"9 of Hearts": 15, "10 of Hearts": 16, "Jack of Hearts": 17,
+			"Queen of Hearts": 18, "King of Hearts": 19, "Ace of Hearts": 20,
+			"5 of Spades": 21, "6 of Spades": 22, "7 of Spades": 23,
+			"8 of Spades": 24, "9 of Spades": 25, "10 of Spades": 26,
+			"Jack of Spades": 27, "Queen of Spades": 28,
+			"King of Spades": 29, "Ace of Spades": 30, "4 of Diamonds": 31,
+			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
+			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
+			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
+			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 42}
+
 game_data = {
 	'hands': [[], [], [], []],
 	'kitty': [],
@@ -44,6 +60,8 @@ def page_index():
 # You can use it to look at other people's hands and cheat. But whatever.
 @bottle.route('/gamestate')
 def page_gamestate():
+	for i in game_data['hands']:
+		i.sort(key = lambda x: card_val.get(x, -1))
 	return game_data
 
 @bottle.post('/action')
