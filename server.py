@@ -76,7 +76,7 @@ def page_index():
 @bottle.route('/gamestate')
 def page_gamestate():
 	for i in game_data['hands']:
-		i.sort(key = lambda x: card_val.get(x, -1))
+		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
 	return game_data
 
 @bottle.post('/action')
