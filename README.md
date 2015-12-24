@@ -19,6 +19,10 @@ Bottle relies on an underlying web server (which, by default, it supplies itself
 
 This requires you to install the respective server with pip.
 
+### Setting the port
+
+You can select which port the server connects to from the command line with the `-p` command. For example, to run on port 80, you can use `python server.py -p80`.
+
 ## Contibuting
 
 Use Git or something.
