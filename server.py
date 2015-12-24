@@ -51,29 +51,31 @@ def page_action():
 	action = bottle.request.forms.get('action')
 	card = bottle.request.forms.get('card')
 	player = int(bottle.request.forms.get('player'))
-	# Play a card
-	if action == 'play':
-		if card in game_data['hands'][player]:
-			game_data['table'].append([player, card])
-			game_data['hands'][player].remove(card)
-	# Completely redeal cards
-	if action == 'redeal':
-		actionDeal()
-	# Grab the kitty
-	if action == 'grab':
-		game_data['hands'][player] += game_data['kitty']
-		game_data['kitty'] = []
-	# Discard a card
-	if action == 'discard':
-		if card in game_data['hands'][player]:
-			game_data['hands'][player].remove(card)
-			game_data['table'].append([player, '(discarded)'])
-	# Clear the table
-	if action == 'clear':
-		game_data['table'].clear()
-		# game_data['table'] = [-1] * len(game_data['table'])
-	# Increment version counter
-	game_data['version_id'] += 1
+	# Make sure that only actual players perform actions.
+	if 0 <= player < 4:
+		# Play a card
+		if action == 'play':
+			if card in game_data['hands'][player]:
+				game_data['table'].append([player, card])
+				game_data['hands'][player].remove(card)
+		# Completely redeal cards
+		if action == 'redeal':
+			actionDeal()
+		# Grab the kitty
+		if action == 'grab':
+			game_data['hands'][player] += game_data['kitty']
+			game_data['kitty'] = []
+		# Discard a card
+		if action == 'discard':
+			if card in game_data['hands'][player]:
+				game_data['hands'][player].remove(card)
+				game_data['table'].append([player, '(discarded)'])
+		# Clear the table
+		if action == 'clear':
+			game_data['table'].clear()
+			# game_data['table'] = [-1] * len(game_data['table'])
+		# Increment version counter
+		game_data['version_id'] += 1
 	# Return the new game state
 	return page_gamestate()
 
