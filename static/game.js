@@ -1,6 +1,18 @@
 var last_gamedata_version = -1;
 var player_id = -1;
 
+function makeCardText(card) {
+	var result = card;
+	if (card.indexOf('Diamonds') != -1 || card.indexOf('Hearts') != -1) {
+		result = '<td><span class="red">' + card + '</span></td>';
+	} else if (card == 'Joker') {
+		result = '<td><span class="blue">' + card + '</span></td>';
+	} else {
+		result = '<td><span>' + card + '</span></td>';
+	}
+	return result;
+}
+
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
@@ -12,7 +24,7 @@ function updateGameView(data, status) {
 		hand_html = '<table style="border: 1px solid">';
 		for (i in myhand) {
 			hand_html += '<tr>';
-			hand_html += '<td>' + myhand[i] + '</td>';
+			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
 			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">Play</button></td>';
 			hand_html += '<td><button onclick="cardDisc(\'' + myhand[i] + '\');">Discard</button></td>';
 			hand_html += '</tr>';
@@ -25,7 +37,7 @@ function updateGameView(data, status) {
 		for (i in table) {
 			var pid = table[i][0];
 			var card = table[i][1];
-			played_html += '<p>Player ' + (pid + 1) + ': ' + card + '</p>';
+			played_html += '<p>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</p>';
 		}
 		$("#playedCards").html(played_html);
 		last_gamedata_version = data.version_id

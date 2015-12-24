@@ -12,3 +12,11 @@ div.wrapper {
 	max-width: 1300px;
 	margin: 0px auto;
 }
+
+span.red {
+	color: red;
+}
+
+span.blue {
+	color: blue;
+}
