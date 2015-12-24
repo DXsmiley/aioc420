@@ -1,6 +1,7 @@
 import bottle
 import random
 import sys
+import json
 
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
@@ -38,6 +39,18 @@ game_data = {
 	'table': [],
 	'version_id': 0
 }
+
+# Load the game state if one was previously saved.
+try:
+	with open('game_state.json') as f:
+		# You can actually put anything you want in that file...
+		game_data = json.loads(f.read())
+except FileNotFoundError:
+	print('State file does not exist.')
+
+def gameStateSave():
+	with open('game_state.json', 'w') as f:
+		f.write(json.dumps(game_data))
 
 # Thanks, Gongy!
 def actionDeal():
@@ -94,6 +107,8 @@ def page_action():
 			# game_data['table'] = [-1] * len(game_data['table'])
 		# Increment version counter
 		game_data['version_id'] += 1
+		# Save it to disk
+		gameStateSave()
 	# Return the new game state
 	return page_gamestate()
 
