@@ -41,17 +41,12 @@ game_data = {
 	'version_id': 0
 }
 
-# Load the game state if one was previously saved.
-try:
-	with open('game_state.json') as f:
-		# You can actually put anything you want in that file...
-		game_data = json.loads(f.read())
-except FileNotFoundError:
-	print('State file does not exist.')
+do_save_data = False
 
 def gameStateSave():
-	with open('game_state.json', 'w') as f:
-		f.write(json.dumps(game_data))
+	if do_save_data:
+		with open('game_state.json', 'w') as f:
+			f.write(json.dumps(game_data))
 
 # Thanks, Gongy!
 def actionDeal():
@@ -148,5 +143,16 @@ for i in sys.argv[1:]:
 		server = i[2:]
 	if i[:2] == '-p':
 		port = int(i[2:])
+	if i == '-f':
+		do_save_data = True
+
+if do_save_data:
+	# Load the game state if one was previously saved.
+	try:
+		with open('game_state.json') as f:
+			# You can actually put anything you want in that file...
+			game_data = json.loads(f.read())
+	except FileNotFoundError:
+		print('State file does not exist.')
 
 bottle.run(host = '0.0.0.0', port = port, server = server)
