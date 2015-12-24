@@ -1,14 +1,14 @@
 var last_gamedata_version = -1;
 var player_id = -1;
 
-function makeCardText(card) {
-	var result = card;
-	if (card.indexOf('Diamonds') != -1 || card.indexOf('Hearts') != -1) {
-		result = '<td><span class="red">' + card + '</span></td>';
-	} else if (card == 'Joker') {
-		result = '<td><span class="blue">' + card + '</span></td>';
+function makeCardText(cardname) {
+	var result = cardname;
+	if (cardname.indexOf('Diamonds') != -1 || cardname.indexOf('Hearts') != -1) {
+		result = '<td><span class="red">' + cardname + '</span></td>';
+	} else if (cardname == 'Joker') {
+		result = '<td><span class="blue">' + cardname + '</span></td>';
 	} else {
-		result = '<td><span>' + card + '</span></td>';
+		result = '<td><span>' + cardname + '</span></td>';
 	}
 	return result;
 }
@@ -16,10 +16,12 @@ function makeCardText(card) {
 function makeTableTable(cards) {
 	var played_html = '<table>';
 	for (i in cards) {
-		var pid = cards[i][0];
-		var card = cards[i][1];
+		var pid = cards[i].player;
+		var card = cards[i].card;
+		var cardname = card;
+		if (cards[i].state == 'discarded') cardname = '(discarded)';
 		played_html += '<tr>';
-		played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(card) + '</td>';
+		played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(cardname) + '</td>';
 		if (pid == player_id) {
 			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
 		} else {

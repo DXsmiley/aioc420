@@ -89,7 +89,11 @@ def page_action():
 		# Play a card
 		if action == 'play':
 			if card in game_data['hands'][player]:
-				game_data['table'].append([player, card])
+				game_data['table'].append({
+					'player': player,
+					'card': card,
+					'state': 'normal'
+					})
 				game_data['hands'][player].remove(card)
 		# Completely redeal cards
 		if action == 'redeal':
@@ -102,14 +106,26 @@ def page_action():
 		if action == 'discard':
 			if card in game_data['hands'][player]:
 				game_data['hands'][player].remove(card)
-				game_data['table'].append([player, '(discarded)'])
+				game_data['table'].append({
+					'player': player,
+					'card': card,
+					'state': 'discarded'
+				})
 		# Clear the table
 		if action == 'clear':
 			game_data['floor'] = game_data['table']
 			game_data['table'] = []
 			# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
-			game_data['table'].remove([player, card])
+			# Remove the thing from the table and the floor.
+			for i in game_data['table']:
+				if i['card'] == card:
+					game_data['table'].remove(i)
+					break
+			for i in game_data['floor']:
+				if i['card'] == card:
+					game_data['floor'].remove(i)
+					break
 			game_data['hands'][player].append(card)
 		# Increment version counter
 		game_data['version_id'] += 1
