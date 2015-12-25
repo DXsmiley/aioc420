@@ -59,7 +59,6 @@ def sort_hands():
 
 def set_trump(suit):
 	global card_val
-	game_data['trump'] = suit
 	card_val = copy.copy(card_val_init)
 	for i in card_val:
 		if suit in i:
