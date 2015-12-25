@@ -91,6 +91,16 @@ def actionDeal():
 		game_data['kitty'].append(deck_init[c])
 	set_trump('No Trump')
 
+def markWinningCard():
+	highest = 0
+	for i in game_data['table']:
+		if i['state'] != 'discarded':
+			i['winning'] = False
+			highest = max(highest, card_val[i['card']])
+	for i in game_data['table']:
+		if i['state'] != 'discarded' and card_val[i['card']] == highest:
+			i['winning'] = True
+
 
 @bottle.route('/')
 def page_index():
@@ -128,6 +138,7 @@ def page_action():
 							'state': 'normal'
 							})
 						game_data['hands'][player].remove(card)
+						markWinningCard()
 				else:
 					# in this case, discard
 					game_data['hands'][player].remove(card)
@@ -159,6 +170,7 @@ def page_action():
 					game_data['floor'].remove(i)
 					break
 			game_data['hands'][player].append(card)
+			markWinningCard()			
 		if action == 'setTrump':
 			set_trump(suit)
 		# Increment version counter
