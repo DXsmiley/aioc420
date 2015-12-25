@@ -180,6 +180,8 @@ function setBetAmount(betAmount) {
 }
 
 function setBetSuit(betSuit) {
+	if (betSuit == 'Misere' || betSuit == 'Open Misere') trump_suit = 'No Trump';
+	else trump_suit = betSuit;
 	$.post('/action',
 		{
 			'action': 'setBetSuit',

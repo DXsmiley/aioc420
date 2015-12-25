@@ -90,6 +90,7 @@ def actionDeal():
 			game_data['hands'][player-1].append(deck_init[c])
 	for c in range(40, 43):
 		game_data['kitty'].append(deck_init[c])
+	set_trump('No Trump')
 	# game_data['betSuit'] also can take on 'Misere' and 'Open Misere' values
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
@@ -179,6 +180,11 @@ def page_action():
 			if isMisere(game_data['betSuit']) or isMisere(betSuit):
 				game_data['betAmount'] = -1
 			game_data['betSuit'] = betSuit
+			# Set the trump suit
+			if isMisere(betSuit):
+				set_trump('No Trump')
+			else:
+				set_trump(betSuit);
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
