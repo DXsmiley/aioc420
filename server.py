@@ -2,6 +2,7 @@ import bottle
 import random
 import sys
 import json
+import copy
 
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
@@ -17,7 +18,7 @@ deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds",
 			"King of Diamonds", "Ace of Diamonds"]
 
-card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
+card_val_init = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
 			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
 			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
@@ -32,6 +33,8 @@ card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
 			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
 			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
+
+card_val = copy.copy(card_val_init)
 
 game_data = {
 	'hands': [[], [], [], []],
@@ -54,89 +57,17 @@ def sort_hands():
 		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
 
 def set_trump(suit):
-	game_data['trump'] = suit
 	global card_val
-	if suit == 'Spades':
-		card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
-			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
-			"Jack of Clubs": 130, "Queen of Clubs": 7, "King of Clubs": 8,
-			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
-			"6 of Hearts": 12, "7 of Hearts": 13, "8 of Hearts": 14,
-			"9 of Hearts": 15, "10 of Hearts": 16, "Jack of Hearts": 17,
-			"Queen of Hearts": 18, "King of Hearts": 19, "Ace of Hearts": 20,
-			"5 of Spades": 121, "6 of Spades": 122, "7 of Spades": 123,
-			"8 of Spades": 124, "9 of Spades": 125, "10 of Spades": 126,
-			"Jack of Spades": 131, "Queen of Spades": 127,
-			"King of Spades": 128, "Ace of Spades": 129, "4 of Diamonds": 31,
-			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
-			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
-			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
-	if suit == 'Clubs':
-		card_val = {"5 of Clubs": 100, "6 of Clubs": 101, "7 of Clubs": 102,
-			"8 of Clubs": 103, "9 of Clubs": 104, "10 of Clubs": 105,
-			"Jack of Clubs": 110, "Queen of Clubs": 106, "King of Clubs": 107,
-			"Ace of Clubs": 108, "4 of Hearts": 10, "5 of Hearts": 11,
-			"6 of Hearts": 12, "7 of Hearts": 13, "8 of Hearts": 14,
-			"9 of Hearts": 15, "10 of Hearts": 16, "Jack of Hearts": 17,
-			"Queen of Hearts": 18, "King of Hearts": 19, "Ace of Hearts": 20,
-			"5 of Spades": 21, "6 of Spades": 22, "7 of Spades": 23,
-			"8 of Spades": 24, "9 of Spades": 25, "10 of Spades": 26,
-			"Jack of Spades": 109, "Queen of Spades": 28,
-			"King of Spades": 29, "Ace of Spades": 30, "4 of Diamonds": 31,
-			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
-			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
-			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
-	if suit == 'Diamonds':
-		card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
-			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
-			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
-			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
-			"6 of Hearts": 12, "7 of Hearts": 13, "8 of Hearts": 14,
-			"9 of Hearts": 15, "10 of Hearts": 16, "Jack of Hearts": 141,
-			"Queen of Hearts": 18, "King of Hearts": 19, "Ace of Hearts": 20,
-			"5 of Spades": 21, "6 of Spades": 22, "7 of Spades": 23,
-			"8 of Spades": 24, "9 of Spades": 25, "10 of Spades": 26,
-			"Jack of Spades": 27, "Queen of Spades": 28,
-			"King of Spades": 29, "Ace of Spades": 30, "4 of Diamonds": 131,
-			"5 of Diamonds": 132, "6 of Diamonds": 133, "7 of Diamonds": 134,
-			"8 of Diamonds": 135, "9 of Diamonds": 136, "10 of Diamonds": 137,
-			"Jack of Diamonds": 142, "Queen of Diamonds": 138,
-			"King of Diamonds": 139, "Ace of Diamonds": 140, "Joker": 200}
-	if suit == 'Hearts':
-		card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
-			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
-			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
-			"Ace of Clubs": 9, "4 of Hearts": 110, "5 of Hearts": 111,
-			"6 of Hearts": 112, "7 of Hearts": 113, "8 of Hearts": 114,
-			"9 of Hearts": 115, "10 of Hearts": 116, "Jack of Hearts": 121,
-			"Queen of Hearts": 117, "King of Hearts": 118, "Ace of Hearts": 119,
-			"5 of Spades": 21, "6 of Spades": 22, "7 of Spades": 23,
-			"8 of Spades": 24, "9 of Spades": 25, "10 of Spades": 26,
-			"Jack of Spades": 27, "Queen of Spades": 28,
-			"King of Spades": 29, "Ace of Spades": 30, "4 of Diamonds": 31,
-			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
-			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
-			"Jack of Diamonds": 120, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
-	if suit == 'No Trump':
-		card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
-			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
-			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
-			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
-			"6 of Hearts": 12, "7 of Hearts": 13, "8 of Hearts": 14,
-			"9 of Hearts": 15, "10 of Hearts": 16, "Jack of Hearts": 17,
-			"Queen of Hearts": 18, "King of Hearts": 19, "Ace of Hearts": 20,
-			"5 of Spades": 21, "6 of Spades": 22, "7 of Spades": 23,
-			"8 of Spades": 24, "9 of Spades": 25, "10 of Spades": 26,
-			"Jack of Spades": 27, "Queen of Spades": 28,
-			"King of Spades": 29, "Ace of Spades": 30, "4 of Diamonds": 31,
-			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
-			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
-			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
-
+	game_data['trump'] = suit
+	card_val = copy.copy(card_val_init)
+	for i in card_val:
+		if suit in i:
+			card_val[i] += 100
+	# Might what to do something about these floats sometime in the future.
+	if suit == 'Hearts': card_val['Jack of Diamonds'] = card_val['Jack of Hearts'] - 0.5
+	if suit == 'Diamonds': card_val['Jack of Hearts'] = card_val['Jack of Diamonds'] - 0.5
+	if suit == 'Spades': card_val['Jack of Clubs'] = card_val['Jack of Spades'] - 0.5
+	if suit == 'Clubs': card_val['Jack of Spades'] = card_val['Jack of Clubs'] - 0.5
 
 # Thanks, Gongy!
 def actionDeal():
