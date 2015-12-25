@@ -2,6 +2,7 @@ import bottle
 import random
 import sys
 import json
+import copy
 
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
@@ -17,7 +18,7 @@ deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds",
 			"King of Diamonds", "Ace of Diamonds"]
 
-card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
+card_val_init = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
 			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
 			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
@@ -31,7 +32,9 @@ card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
 			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
 			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 42}
+			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
+
+card_val = copy.copy(card_val_init)
 
 game_data = {
 	'hands': [[], [], [], []],
@@ -49,6 +52,30 @@ def gameStateSave():
 	if do_save_data:
 		with open('game_state.json', 'w') as f:
 			f.write(json.dumps(game_data))
+
+def sort_hands():
+	for i in game_data['hands']:
+		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
+
+def set_trump(suit):
+	global card_val
+	game_data['trump'] = suit
+	card_val = copy.copy(card_val_init)
+	for i in card_val:
+		if suit in i:
+			card_val[i] += 100
+	if suit == 'Hearts':
+		card_val['Jack of Hearts'] = 199
+		card_val['Jack of Diamonds'] = 198
+	if suit == 'Diamonds':
+		card_val['Jack of Diamonds'] = 199
+		card_val['Jack of Hearts'] = 198
+	if suit == 'Spades':
+		card_val['Jack of Spades'] = 199
+		card_val['Jack of Clubs'] = 198
+	if suit == 'Clubs':
+		card_val['Jack of Clubs'] = 199
+		card_val['Jack of Spades'] = 198
 
 # Thanks, Gongy!
 def actionDeal():
@@ -78,8 +105,7 @@ def page_index():
 # You can use it to look at other people's hands and cheat. But whatever.
 @bottle.route('/gamestate')
 def page_gamestate():
-	for i in game_data['hands']:
-		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
+	sort_hands()
 	return game_data
 
 @bottle.post('/action')
@@ -89,15 +115,31 @@ def page_action():
 	player = int(bottle.request.forms.get('player'))
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
-		# Play a card
+		# Play or discard a card
 		if action == 'play':
 			if card in game_data['hands'][player]:
-				game_data['table'].append({
-					'player': player,
-					'card': card,
-					'state': 'normal'
+				if len(game_data['hands'][player]) <= 10:
+					# in this case, play a card
+					# make sure that only one card is played per turn
+					can_play = True
+					for i in game_data['table']:
+						if i['player'] == player:
+							can_play = False
+					if can_play:
+						game_data['table'].append({
+							'player': player,
+							'card': card,
+							'state': 'normal'
+							})
+						game_data['hands'][player].remove(card)
+				else:
+					# in this case, discard
+					game_data['hands'][player].remove(card)
+					game_data['table'].append({
+						'player': player,
+						'card': card,
+						'state': 'discarded'
 					})
-				game_data['hands'][player].remove(card)
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
@@ -105,15 +147,6 @@ def page_action():
 		if action == 'grab':
 			game_data['hands'][player] += game_data['kitty']
 			game_data['kitty'] = []
-		# Discard a card
-		if action == 'discard':
-			if card in game_data['hands'][player]:
-				game_data['hands'][player].remove(card)
-				game_data['table'].append({
-					'player': player,
-					'card': card,
-					'state': 'discarded'
-				})
 		# Clear the table
 		if action == 'clear':
 			game_data['floor'] = game_data['table']
