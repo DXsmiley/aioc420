@@ -150,6 +150,7 @@ def page_action():
 		# Clear the table
 		if action == 'clear':
 			game_data['floor'] = game_data['table']
+			game_data['floor'].reverse();
 			game_data['table'] = []
 			# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
