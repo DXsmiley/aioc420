@@ -1,12 +1,20 @@
 var last_gamedata_version = -1;
 var player_id = -1;
+var trump_suit;
 
 function makeCardText(cardname) {
 	var result = cardname;
-	if (cardname.indexOf('Diamonds') != -1 || cardname.indexOf('Hearts') != -1) {
-		result = '<td><span class="red">' + cardname + '</span></td>';
-	} else if (cardname == 'Joker') {
+	var is_trump = false;
+	if (cardname == 'Joker') is_trump = true;
+	if (cardname.indexOf(trump_suit) != -1) is_trump = true;
+	if (trump_suit == 'Hearts' && cardname == 'Jack of Diamonds') is_trump = true; 
+	if (trump_suit == 'Diamonds' && cardname == 'Jack of Hearts') is_trump = true; 
+	if (trump_suit == 'Spades' && cardname == 'Jack of Clubs') is_trump = true; 
+	if (trump_suit == 'Clubs' && cardname == 'Jack of Spades') is_trump = true; 
+	if (is_trump) {
 		result = '<td><span class="blue">' + cardname + '</span></td>';
+	} else if (cardname.indexOf('Diamonds') != -1 || cardname.indexOf('Hearts') != -1) {
+		result = '<td><span class="red">' + cardname + '</span></td>';
 	} else {
 		result = '<td><span>' + cardname + '</span></td>';
 	}
@@ -36,6 +44,7 @@ function makeTableTable(cards) {
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
+		trump_suit = data.trump;
 		var myhand = data.hands[player_id];
 		var table = data.table;
 		table.reverse();
@@ -107,6 +116,9 @@ function cardPickup(card) {
 }
 
 function uniAction(action_name) {
+	if (action_name == 'redeal') {
+		trump_suit = 'No trump';
+	}
 	$.post('/action',
 		{
 			'action': action_name,
@@ -117,6 +129,7 @@ function uniAction(action_name) {
 }
 
 function setTrump(suit) {
+	trump_suit = suit;
 	$.post('/action',
 		{
 			'action': 'setTrump',
