@@ -83,15 +83,31 @@ def page_action():
 	suit = bottle.request.forms.get('suit')
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
-		# Play a card
+		# Play or discard a card
 		if action == 'play':
 			if card in game_data['hands'][player]:
-				game_data['table'].append({
-					'player': player,
-					'card': card,
-					'state': 'normal'
+				if len(game_data['hands'][player]) <= 10:
+					# in this case, play a card
+					# make sure that only one card is played per turn
+					can_play = True
+					for i in game_data['table']:
+						if i['player'] == player:
+							can_play = False
+					if can_play:
+						game_data['table'].append({
+							'player': player,
+							'card': card,
+							'state': 'normal'
+							})
+						game_data['hands'][player].remove(card)
+				else:
+					# in this case, discard
+					game_data['hands'][player].remove(card)
+					game_data['table'].append({
+						'player': player,
+						'card': card,
+						'state': 'discarded'
 					})
-				game_data['hands'][player].remove(card)
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
@@ -99,15 +115,6 @@ def page_action():
 		if action == 'grab':
 			game_data['hands'][player] += game_data['kitty']
 			game_data['kitty'] = []
-		# Discard a card
-		if action == 'discard':
-			if card in game_data['hands'][player]:
-				game_data['hands'][player].remove(card)
-				game_data['table'].append({
-					'player': player,
-					'card': card,
-					'state': 'discarded'
-				})
 		# Clear the table
 		if action == 'clear':
 			game_data['floor'] = game_data['table']

@@ -45,8 +45,7 @@ function updateGameView(data, status) {
 		for (i in myhand) {
 			hand_html += '<tr>';
 			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
-			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">Play</button></td>';
-			hand_html += '<td><button onclick="cardDisc(\'' + myhand[i] + '\');">Discard</button></td>';
+			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">Choose</button></td>';
 			hand_html += '</tr>';
 			// console.log(myhand[i], t);
 		}
