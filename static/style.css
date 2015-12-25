@@ -20,3 +20,13 @@ span.red {
 span.blue {
 	color: blue;
 }
+
+button {
+	border: none;
+	background: #3498db;
+	color: #ffffff;
+}
+
+button:hover {
+	background: #3cb0fd;
+}
