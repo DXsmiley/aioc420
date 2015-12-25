@@ -2,6 +2,14 @@ var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
 
+function isMisere(betSuit) {
+	return betSuit == 'Misere' || betSuit == 'Open Misere';
+}
+function getTrump(betSuit) {
+	if (isMisere(betSuit) || betSuit == '') return 'No Trump';
+	else return betSuit;
+}
+
 function makeCardText(cardname) {
 	var result = cardname;
 	var is_trump = false;
@@ -44,7 +52,7 @@ function makeTableTable(cards) {
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
-		trump_suit = data.trump;
+		trump_suit = getTrump(data.betSuit);
 		var myhand = data.hands[player_id];
 		var table = data.table;
 		table.reverse();
@@ -148,9 +156,6 @@ function actionRedeal() {
 }
 
 function uniAction(action_name) {
-	if (action_name == 'redeal') {
-		trump_suit = 'No trump';
-	}
 	$.post('/action',
 		{
 			'action': action_name,
@@ -172,8 +177,6 @@ function setBetAmount(betAmount) {
 }
 
 function setBetSuit(betSuit) {
-	if (betSuit == 'Misere' || betSuit == 'Open Misere') trump_suit = 'No Trump';
-	else trump_suit = betSuit;
 	$.post('/action',
 		{
 			'action': 'setBetSuit',

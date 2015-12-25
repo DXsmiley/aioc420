@@ -57,6 +57,14 @@ def sort_hands():
 	for i in game_data['hands']:
 		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
 
+
+def isMisere(string):
+	return string == 'Misere' or string == 'Open Misere'
+
+def getTrump(betSuit):
+	if isMisere(betSuit) or betSuit == '': return 'No Trump'
+	else: return betSuit
+
 def set_trump(suit):
 	global card_val
 	card_val = copy.copy(card_val_init)
@@ -93,9 +101,6 @@ def actionDeal():
 	# game_data['betSuit'] also can take on 'Misere' and 'Open Misere' values
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
-
-def isMisere(string):
-	return string == 'Misere' or string == 'Open Misere'
 
 @bottle.route('/')
 def page_index():
@@ -181,10 +186,7 @@ def page_action():
 				game_data['betAmount'] = -1
 			game_data['betSuit'] = betSuit
 			# Set the trump suit
-			if isMisere(betSuit):
-				set_trump('No Trump')
-			else:
-				set_trump(betSuit);
+			set_trump(getTrump(betSuit))
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
