@@ -106,6 +106,13 @@ function cardPickup(card) {
 	);
 }
 
+function actionRedeal() {
+	var query = window.confirm("Redeal the cards?");
+	if (query) {
+		uniAction('redeal');
+	}
+}
+
 function uniAction(action_name) {
 	$.post('/action',
 		{
