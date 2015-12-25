@@ -63,11 +63,18 @@ def set_trump(suit):
 	for i in card_val:
 		if suit in i:
 			card_val[i] += 100
-	# Might what to do something about these floats sometime in the future.
-	if suit == 'Hearts': card_val['Jack of Diamonds'] = card_val['Jack of Hearts'] - 0.5
-	if suit == 'Diamonds': card_val['Jack of Hearts'] = card_val['Jack of Diamonds'] - 0.5
-	if suit == 'Spades': card_val['Jack of Clubs'] = card_val['Jack of Spades'] - 0.5
-	if suit == 'Clubs': card_val['Jack of Spades'] = card_val['Jack of Clubs'] - 0.5
+	if suit == 'Hearts':
+		card_val['Jack of Hearts'] = 199
+		card_val['Jack of Diamonds'] = 198
+	if suit == 'Diamonds':
+		card_val['Jack of Diamonds'] = 199
+		card_val['Jack of Hearts'] = 198
+	if suit == 'Spades':
+		card_val['Jack of Spades'] = 199
+		card_val['Jack of Clubs'] = 198
+	if suit == 'Clubs':
+		card_val['Jack of Clubs'] = 199
+		card_val['Jack of Spades'] = 198
 
 # Thanks, Gongy!
 def actionDeal():
