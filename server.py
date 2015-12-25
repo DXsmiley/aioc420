@@ -154,10 +154,11 @@ def page_action():
 			game_data['kitty'] = []
 		# Clear the table
 		if action == 'clear':
-			game_data['floor'] = game_data['table']
-			game_data['floor'].reverse();
-			game_data['table'] = []
-			# game_data['table'] = [-1] * len(game_data['table'])
+			if (game_data['table']):
+				game_data['floor'] = game_data['table']
+				game_data['floor'].reverse();
+				game_data['table'] = []
+				# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
 			# Remove the thing from the table and the floor.
 			for i in game_data['table']:
