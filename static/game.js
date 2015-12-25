@@ -71,27 +71,19 @@ function updateGameView(data, status) {
 		if (data.betAmount != -1 || data.betSuit != '') {
 			var betValue = 0;
 			betInfo = 'The bet is';
-			if (data.betSuit == 'Misere') {
-				betInfo += ' Misere';
-				betValue = 250;
-			} else if (data.betSuit == 'Open Misere') {
-				betInfo += ' Open Misere';
-				betValue = 500;
-			} else {
-				if (data.betAmount != -1) {
-					betInfo += ' ' + data.betAmount;
-					betValue += 100 * (data.betAmount - 6);
-				}
-				if (data.betSuit != '') {
-					betInfo += ' ' + data.betSuit;
-					if (data.betSuit == 'Spades') betValue += 40;
-					if (data.betSuit == 'Clubs') betValue += 60;
-					if (data.betSuit == 'Diamonds') betValue += 80;
-					if (data.betSuit == 'Hearts') betValue += 100;
-					if (data.betSuit == 'No Trump') betValue += 120;
-				}
-				// only display bet value if both the bet suit and amount have been chosen
-				if (data.betAmount == -1 || data.betSuit == '') betValue = 0;
+			// calculate bet name
+			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
+			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
+			// calculate bet value
+			if (data.betSuit == 'Misere') betValue = 250;
+			else if (data.betSuit == 'Open Misere') betValue = 500;
+			else if (data.betAmount != -1 && data.betSuit != '') {
+				betValue = 100 * (data.betAmount - 6);
+				if (data.betSuit == 'Spades') betValue += 40;
+				if (data.betSuit == 'Clubs') betValue += 60;
+				if (data.betSuit == 'Diamonds') betValue += 80;
+				if (data.betSuit == 'Hearts') betValue += 100;
+				if (data.betSuit == 'No Trump') betValue += 120;
 			}
 			// betValue == 0 means to not display it
 			if (betValue) betInfo += ' (' + betValue + ' points)';
