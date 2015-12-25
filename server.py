@@ -113,9 +113,9 @@ def markWinningCard():
 		first_suit = cardGetSuit(game_data['table'][0]['card'])
 		highest = -1
 		for i in game_data['table']:
+			i['winning'] = False
 			if i['state'] != 'discarded':
 				if cardGetSuit(i['card']) == first_suit or card_val[i['card']] >= 100:
-					i['winning'] = False
 					highest = max(highest, card_val[i['card']])
 		for i in game_data['table']:
 			if card_val[i['card']] == highest:
@@ -200,6 +200,7 @@ def page_action():
 			# should reset it
 			if isMisere(game_data['betSuit']):
 				game_data['betSuit'] = ''
+			markWinningCard()
 		if action == 'setBetSuit':
 			betSuit = bottle.request.forms.get('betSuit')
 			# If the bet suit/type is changing to, from or between misere bets,
@@ -209,6 +210,7 @@ def page_action():
 			game_data['betSuit'] = betSuit
 			# Set the trump suit
 			set_trump(getTrump(betSuit))
+			markWinningCard()
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
