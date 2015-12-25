@@ -2,6 +2,7 @@ import bottle
 import random
 import sys
 import json
+import copy
 
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
@@ -17,7 +18,7 @@ deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds",
 			"King of Diamonds", "Ace of Diamonds"]
 
-card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
+card_val_init = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"8 of Clubs": 3, "9 of Clubs": 4, "10 of Clubs": 5,
 			"Jack of Clubs": 6, "Queen of Clubs": 7, "King of Clubs": 8,
 			"Ace of Clubs": 9, "4 of Hearts": 10, "5 of Hearts": 11,
@@ -31,13 +32,16 @@ card_val = {"5 of Clubs": 0, "6 of Clubs": 1, "7 of Clubs": 2,
 			"5 of Diamonds": 32, "6 of Diamonds": 33, "7 of Diamonds": 34,
 			"8 of Diamonds": 35, "9 of Diamonds": 36, "10 of Diamonds": 37,
 			"Jack of Diamonds": 38, "Queen of Diamonds": 39,
-			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 42}
+			"King of Diamonds": 40, "Ace of Diamonds": 41, "Joker": 200}
+
+card_val = copy.copy(card_val_init)
 
 game_data = {
 	'hands': [[], [], [], []],
 	'kitty': [],
 	'table': [],
 	'floor': [],
+	'trump': 'No Trump',
 	'version_id': 0
 }
 
@@ -47,6 +51,30 @@ def gameStateSave():
 	if do_save_data:
 		with open('game_state.json', 'w') as f:
 			f.write(json.dumps(game_data))
+
+def sort_hands():
+	for i in game_data['hands']:
+		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
+
+def set_trump(suit):
+	global card_val
+	game_data['trump'] = suit
+	card_val = copy.copy(card_val_init)
+	for i in card_val:
+		if suit in i:
+			card_val[i] += 100
+	if suit == 'Hearts':
+		card_val['Jack of Hearts'] = 199
+		card_val['Jack of Diamonds'] = 198
+	if suit == 'Diamonds':
+		card_val['Jack of Diamonds'] = 199
+		card_val['Jack of Hearts'] = 198
+	if suit == 'Spades':
+		card_val['Jack of Spades'] = 199
+		card_val['Jack of Clubs'] = 198
+	if suit == 'Clubs':
+		card_val['Jack of Clubs'] = 199
+		card_val['Jack of Spades'] = 198
 
 # Thanks, Gongy!
 def actionDeal():
@@ -61,7 +89,8 @@ def actionDeal():
 			game_data['hands'][player-1].append(deck_init[c])
 	for c in range(40, 43):
 		game_data['kitty'].append(deck_init[c])
-	game_data['trump'] = 'No Trump'
+	set_trump('No Trump')
+
 
 @bottle.route('/')
 def page_index():
@@ -71,8 +100,7 @@ def page_index():
 # You can use it to look at other people's hands and cheat. But whatever.
 @bottle.route('/gamestate')
 def page_gamestate():
-	for i in game_data['hands']:
-		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
+	sort_hands()
 	return game_data
 
 @bottle.post('/action')
@@ -132,7 +160,7 @@ def page_action():
 					break
 			game_data['hands'][player].append(card)
 		if action == 'setTrump':
-			game_data['trump'] = suit
+			set_trump(suit)
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
