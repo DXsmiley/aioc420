@@ -179,11 +179,11 @@ def page_action():
 				if len(game_data['hands'][player]) <= 10:
 					# in this case, play a card
 					# make sure that only one card is played per turn
-					already_played = 0
+					can_play = True
 					for i in game_data['table']:
 						if i['player'] == player:
-							already_played = 1
-					if already_played == 0:
+							can_play = False
+					if can_play:
 						game_data['table'].append({
 							'player': player,
 							'card': card,
