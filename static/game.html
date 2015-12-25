@@ -18,7 +18,7 @@
 
 						<td class="layout">
 							<p id="yourName">You are nobody.</p>
-							<p id="trumpSuit">There is no trump suit.</p>
+							<p id="betInfo">There is no bet.</p>
 
 							<h2>Controls</h2>
 							<h3>Actions</h3>
@@ -30,12 +30,21 @@
 							<button onclick="changePlayer(1);">Be player 2</button>
 							<button onclick="changePlayer(2);">Be player 3</button>
 							<button onclick="changePlayer(3);">Be player 4</button>
-							<h3>Set Trump Suit</h3>
-							<button onclick="setTrump('No Trump');">No Trump</button>
-							<button onclick="setTrump('Spades');">Spades</button>
-							<button onclick="setTrump('Clubs');">Clubs</button>
-							<button onclick="setTrump('Hearts');">Hearts</button>
-							<button onclick="setTrump('Diamonds');">Diamonds</button>
+							<h3>Set Bet</h3>
+							<button onclick="setBetAmount(6);">6</button>
+							<button onclick="setBetAmount(7);">7</button>
+							<button onclick="setBetAmount(8);">8</button>
+							<button onclick="setBetAmount(9);">9</button>
+							<button onclick="setBetAmount(10);">10</button>
+							<br>
+							<button onclick="setBetSuit('Spades');">&spades;</button>
+							<button onclick="setBetSuit('Clubs');">&clubs;</button>
+							<button onclick="setBetSuit('Diamonds');">&diams;</button>
+							<button onclick="setBetSuit('Hearts');">&hearts;</button>
+							<button onclick="setBetSuit('No Trump');">No Trump</button>
+							<br>
+							<button onclick="setBetSuit('Misere');">Misere</button>
+							<button onclick="setBetSuit('Open Misere');">Open Misere</button>
 						
 							<h2>Kitty</h2>
 							<p id="kittyCards">Nothing here...</p>

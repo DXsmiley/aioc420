@@ -38,7 +38,9 @@ game_data = {
 	'kitty': [],
 	'table': [],
 	'floor': [],
-	'version_id': 0
+	'version_id': 0,
+	'betAmount': -1,
+	'betSuit': ''
 }
 
 do_save_data = False
@@ -61,7 +63,12 @@ def actionDeal():
 			game_data['hands'][player-1].append(deck_init[c])
 	for c in range(40, 43):
 		game_data['kitty'].append(deck_init[c])
-	game_data['trump'] = 'No Trump'
+	# game_data['betSuit'] also can take on 'Misere' and 'Open Misere' values
+	game_data['betAmount'] = -1
+	game_data['betSuit'] = ''
+
+def isMisere(string):
+	return string == 'Misere' or string == 'Open Misere'
 
 @bottle.route('/')
 def page_index():
@@ -80,7 +87,6 @@ def page_action():
 	action = bottle.request.forms.get('action')
 	card = bottle.request.forms.get('card')
 	player = int(bottle.request.forms.get('player'))
-	suit = bottle.request.forms.get('suit')
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
 		# Play a card
@@ -124,8 +130,22 @@ def page_action():
 					game_data['floor'].remove(i)
 					break
 			game_data['hands'][player].append(card)
-		if action == 'setTrump':
-			game_data['trump'] = suit
+		# When changing between Misere/Open Misere, and any other type of bet
+		# all the relevant data has to be reset
+		if action == 'setBetAmount':
+			betAmount = int(bottle.request.forms.get('betAmount'))
+			game_data['betAmount'] = betAmount
+			# If the bet suit/type was a misere, then setting the bet amount
+			# should reset it
+			if isMisere(game_data['betSuit']):
+				game_data['betSuit'] = ''
+		if action == 'setBetSuit':
+			betSuit = bottle.request.forms.get('betSuit')
+			# If the bet suit/type is changing to, from or between misere bets,
+			# the bet amount should be reset
+			if isMisere(game_data['betSuit']) or isMisere(betSuit):
+				game_data['betAmount'] = -1
+			game_data['betSuit'] = betSuit
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk

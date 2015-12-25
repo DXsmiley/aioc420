@@ -55,7 +55,36 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
-		$("#trumpSuit").text("The trump suit is " + data['trump']);
+		var betInfo = 'There is no bet';
+		if (data.betAmount != -1 || data.betSuit != '') {
+			var betValue = 0;
+			betInfo = 'The bet is';
+			if (data.betSuit == 'Misere') {
+				betInfo += ' Misere';
+				betValue = 250;
+			} else if (data.betSuit == 'Open Misere') {
+				betInfo += ' Open Misere';
+				betValue = 500;
+			} else {
+				if (data.betAmount != -1) {
+					betInfo += ' ' + data.betAmount;
+					betValue += 100 * (data.betAmount - 6);
+				}
+				if (data.betSuit != '') {
+					betInfo += ' ' + data.betSuit;
+					if (data.betSuit == 'Spades') betValue += 40;
+					if (data.betSuit == 'Clubs') betValue += 60;
+					if (data.betSuit == 'Diamonds') betValue += 80;
+					if (data.betSuit == 'Hearts') betValue += 100;
+					if (data.betSuit == 'No Trump') betValue += 120;
+				}
+				// only display bet value if both the bet suit and amount have been chosen
+				if (data.betAmount == -1 || data.betSuit == '') betValue = 0;
+			}
+			// betValue == 0 means to not display it
+			if (betValue) betInfo += ' (' + betValue + ' points)';
+		}
+		$("#betInfo").text(betInfo);
 		last_gamedata_version = data.version_id
 	}
 }
@@ -117,12 +146,23 @@ function uniAction(action_name) {
 	);
 }
 
-function setTrump(suit) {
+function setBetAmount(betAmount) {
 	$.post('/action',
 		{
-			'action': 'setTrump',
+			'action': 'setBetAmount',
 			'player': player_id,
-			'suit': suit
+			'betAmount': betAmount
+		},
+		updateGameView
+	);
+}
+
+function setBetSuit(betSuit) {
+	$.post('/action',
+		{
+			'action': 'setBetSuit',
+			'player': player_id,
+			'betSuit': betSuit
 		},
 		updateGameView
 	);
