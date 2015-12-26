@@ -85,7 +85,15 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
-		$("#trickState").html(''+data.tricks[0]+' : '+data.tricks[1]);
+		var my_score, other_score;
+		if (player_id == 0 || player_id == 2) {
+			my_score = data.tricks[0];
+			other_score = data.tricks[1];
+		} else {
+			my_score = data.tricks[1];
+			other_score = data.tricks[0];
+		}
+		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
 		var betInfo = 'There is no bet';
 		if (data.betAmount != -1 || data.betSuit != '') {
 			var betValue = 0;
