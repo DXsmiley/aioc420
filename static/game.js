@@ -3,6 +3,7 @@ var player_id = -1;
 var trump_suit;
 var poll_timer = null;
 var show_trump = 'colour';
+var query_timeout = 2000;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -139,7 +140,7 @@ function postAction(action_data) {
 		'url': '/action',
 		'data': action_data,
 		'dataType': 'json',
-		'timeout': 500,
+		'timeout': query_timeout,
 		'success': updateGameView,
 		'error': handleUpdateError,
 	});
@@ -201,7 +202,7 @@ function getGameData() {
 	$.ajax({
 		'type': 'GET',
 		'url': '/gamestate',
-		'timeout': 500,
+		'timeout': query_timeout,
 		'success': updateGameView,
 		'error': handleUpdateError,
 	});
