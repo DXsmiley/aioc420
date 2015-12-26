@@ -106,6 +106,25 @@ function updateGameView(data, status) {
 	}
 }
 
+function handleUpdateError(request, status, error) {
+	poll_timer = window.setTimeout(getGameData, 800);
+	console.log('Ajax request failed:', status, ', ', error)
+}
+
+function postAction(action_data) {
+	window.clearTimeout(poll_timer);
+	action_data.player = player_id;
+	$.ajax({
+		'type': 'POST',
+		'url': '/action',
+		'data': action_data,
+		'dataType': 'json',
+		'timeout': 500,
+		'success': updateGameView,
+		'error': handleUpdateError,
+	});
+}
+
 function changePlayer(pid) {
 	player_id = pid;
 	last_gamedata_version = -1;
@@ -193,9 +212,13 @@ function setBetSuit(betSuit) {
 
 function getGameData() {
 	window.clearTimeout(poll_timer);
-	$.get("/gamestate",
-		updateGameView
-	);
+	$.ajax({
+		'type': 'GET',
+		'url': '/gamestate',
+		'timeout': 500,
+		'success': updateGameView,
+		'error': handleUpdateError,
+	});
 }
 
 poll_timer = setTimeout(getGameData, 1000);
