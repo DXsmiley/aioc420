@@ -2,6 +2,14 @@ var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
 
+function isMisere(betSuit) {
+	return betSuit == 'Misere' || betSuit == 'Open Misere';
+}
+function getTrump(betSuit) {
+	if (isMisere(betSuit) || betSuit == '') return 'No Trump';
+	else return betSuit;
+}
+
 function makeCardText(cardname) {
 	var result = cardname;
 	var is_trump = false;
@@ -44,7 +52,7 @@ function makeTableTable(cards) {
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
-		trump_suit = data.trump;
+		trump_suit = getTrump(data.betSuit);
 		var myhand = data.hands[player_id];
 		var table = data.table;
 		table.reverse();
@@ -67,7 +75,28 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
-		$("#trumpSuit").text("The trump suit is " + data['trump']);
+		var betInfo = 'There is no bet';
+		if (data.betAmount != -1 || data.betSuit != '') {
+			var betValue = 0;
+			betInfo = 'The bet is';
+			// calculate bet name
+			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
+			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
+			// calculate bet value
+			if (data.betSuit == 'Misere') betValue = 250;
+			else if (data.betSuit == 'Open Misere') betValue = 500;
+			else if (data.betAmount != -1 && data.betSuit != '') {
+				betValue = 100 * (data.betAmount - 6);
+				if (data.betSuit == 'Spades') betValue += 40;
+				if (data.betSuit == 'Clubs') betValue += 60;
+				if (data.betSuit == 'Diamonds') betValue += 80;
+				if (data.betSuit == 'Hearts') betValue += 100;
+				if (data.betSuit == 'No Trump') betValue += 120;
+			}
+			// betValue == 0 means to not display it
+			if (betValue) betInfo += ' (' + betValue + ' points)';
+		}
+		$("#betInfo").text(betInfo);
 		last_gamedata_version = data.version_id
 	}
 }
@@ -127,9 +156,6 @@ function actionRedeal() {
 }
 
 function uniAction(action_name) {
-	if (action_name == 'redeal') {
-		trump_suit = 'No trump';
-	}
 	$.post('/action',
 		{
 			'action': action_name,
@@ -139,13 +165,23 @@ function uniAction(action_name) {
 	);
 }
 
-function setTrump(suit) {
-	trump_suit = suit;
+function setBetAmount(betAmount) {
 	$.post('/action',
 		{
-			'action': 'setTrump',
+			'action': 'setBetAmount',
 			'player': player_id,
-			'suit': suit
+			'betAmount': betAmount
+		},
+		updateGameView
+	);
+}
+
+function setBetSuit(betSuit) {
+	$.post('/action',
+		{
+			'action': 'setBetSuit',
+			'player': player_id,
+			'betSuit': betSuit
 		},
 		updateGameView
 	);
