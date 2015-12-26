@@ -7,6 +7,7 @@ var show_trump = 'colour';
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
 }
+
 function getTrump(betSuit) {
 	if (isMisere(betSuit) || betSuit == '') return 'No Trump';
 	else return betSuit;
@@ -141,38 +142,18 @@ function changePlayer(pid) {
 
 function cardPlay(card) {
 	window.clearTimeout(poll_timer);
-	$.post("/action",
-		{
-			'action': 'play',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
-}
-
-function cardDisc(card) {
-	window.clearTimeout(poll_timer);
-	$.post("/action",
-		{
-			'action': 'discard',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
+	postAction({
+		'action': 'play',
+		'card': card
+	});
 }
 
 function cardPickup(card) {
 	window.clearTimeout(poll_timer);
-	$.post("/action",
-		{
-			'action': 'pickup',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
+	postAction({
+		'action': 'pickup',
+		'card': card
+	});
 }
 
 function actionRedeal() {
@@ -184,37 +165,23 @@ function actionRedeal() {
 
 function uniAction(action_name) {
 	window.clearTimeout(poll_timer);
-	$.post('/action',
-		{
-			'action': action_name,
-			'player': player_id
-		},
-		updateGameView
-	);
+	postAction({'action': action_name});
 }
 
 function setBetAmount(betAmount) {
 	window.clearTimeout(poll_timer);
-	$.post('/action',
-		{
-			'action': 'setBetAmount',
-			'player': player_id,
-			'betAmount': betAmount
-		},
-		updateGameView
-	);
+	postAction({
+		'action': 'setBetAmount',
+		'betAmount': betAmount
+	});
 }
 
 function setBetSuit(betSuit) {
 	window.clearTimeout(poll_timer);
-	$.post('/action',
-		{
-			'action': 'setBetSuit',
-			'player': player_id,
-			'betSuit': betSuit
-		},
-		updateGameView
-	);
+	postAction({
+		'action': 'setBetSuit',
+		'betSuit': betSuit
+	});
 }
 
 function getGameData() {
