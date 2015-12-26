@@ -41,7 +41,7 @@ game_data = {
 	'kitty': [],
 	'table': [],
 	'floor': [],
-	'tricks': [],
+	'tricks': [0, 0],
 	'version_id': 0,
 	'betAmount': -1,
 	'betSuit': ''
