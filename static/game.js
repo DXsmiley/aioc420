@@ -36,19 +36,20 @@ function makeCardText(cardname) {
 	return result;
 }
 
-function makeTableTable(cards) {
+function makeTableTable(cards, can_discard) {
 	var played_html = '<table>';
 	for (i in cards) {
 		var pid = cards[i].player;
 		var card = cards[i].card;
 		var cardname = card;
-		if (cards[i].state == 'discarded') cardname = '(discarded)';
+		if (cards[i].state == 'discarded' && (pid != player_id || !can_discard)) cardname = '(discarded)';
+		else if (cards[i].state == 'discarded') cardname += ' (discarded)';
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
 		if (cards[i].winning) played_html += '</strong>';
 		played_html += '</td>';
-		if (pid == player_id) {
+		if (pid == player_id && can_discard) {
 			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
 		} else {
 			played_html += '<td></td>';
@@ -83,8 +84,17 @@ function updateGameView(data, status) {
 		hand_html += '</table>';
 		// console.log(hand_html);
 		$("#myCards").html(hand_html);
-		$("#playedCards").html(makeTableTable(data.table));
-		$("#floorCards").html(makeTableTable(data.floor));
+		$("#playedCards").html(makeTableTable(data.table, true));
+		$("#floorCards").html(makeTableTable(data.floor, false));
+		var my_score, other_score;
+		if (player_id == 0 || player_id == 2) {
+			my_score = data.tricks[0];
+			other_score = data.tricks[1];
+		} else {
+			my_score = data.tricks[1];
+			other_score = data.tricks[0];
+		}
+		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
 		var betInfo = 'There is no bet';
 		if (data.betAmount != -1 || data.betSuit != '') {
 			var betValue = 0;
