@@ -1,6 +1,7 @@
 var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
+var poll_timer = null;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -54,6 +55,7 @@ function makeTableTable(cards) {
 
 // Update the game view with the given data.
 function updateGameView(data, status) {
+	poll_timer = window.setTimeout(getGameData, 400);
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
 		var myhand = data.hands[player_id];
@@ -104,20 +106,15 @@ function updateGameView(data, status) {
 	}
 }
 
-// Update the game view and set a timer to check for new data.
-function updateGameViewSetTimer(data, status) {
-	updateGameView(data, status);
-	setTimeout(getGameData, 300);
-}
-
 function changePlayer(pid) {
 	player_id = pid;
 	last_gamedata_version = -1;
 	$("#yourName").text("You are player " + (pid + 1));
+	getGameData();
 }
 
 function cardPlay(card) {
-	// console.log('Playing card: ', card)
+	window.clearTimeout(poll_timer);
 	$.post("/action",
 		{
 			'action': 'play',
@@ -129,7 +126,7 @@ function cardPlay(card) {
 }
 
 function cardDisc(card) {
-	// console.log('Playing card: ', card)
+	window.clearTimeout(poll_timer);
 	$.post("/action",
 		{
 			'action': 'discard',
@@ -141,6 +138,7 @@ function cardDisc(card) {
 }
 
 function cardPickup(card) {
+	window.clearTimeout(poll_timer);
 	$.post("/action",
 		{
 			'action': 'pickup',
@@ -159,6 +157,7 @@ function actionRedeal() {
 }
 
 function uniAction(action_name) {
+	window.clearTimeout(poll_timer);
 	$.post('/action',
 		{
 			'action': action_name,
@@ -169,6 +168,7 @@ function uniAction(action_name) {
 }
 
 function setBetAmount(betAmount) {
+	window.clearTimeout(poll_timer);
 	$.post('/action',
 		{
 			'action': 'setBetAmount',
@@ -180,6 +180,7 @@ function setBetAmount(betAmount) {
 }
 
 function setBetSuit(betSuit) {
+	window.clearTimeout(poll_timer);
 	$.post('/action',
 		{
 			'action': 'setBetSuit',
@@ -191,9 +192,10 @@ function setBetSuit(betSuit) {
 }
 
 function getGameData() {
+	window.clearTimeout(poll_timer);
 	$.get("/gamestate",
-		updateGameViewSetTimer
+		updateGameView
 	);
 }
 
-setTimeout(getGameData, 1000);
+poll_timer = setTimeout(getGameData, 1000);
