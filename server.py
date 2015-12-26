@@ -43,6 +43,7 @@ game_data = {
 	'floor': [],
 	'tricks': [0, 0],
 	'version_id': 0,
+	'betPlayer': -1,
 	'betAmount': -1,
 	'betSuit': ''
 }
@@ -101,6 +102,7 @@ def actionDeal():
 		game_data['kitty'].append(deck_init[c])
 	set_trump('No Trump')
 	# game_data['betSuit'] also can take on 'Misere' and 'Open Misere' values
+	game_data['betPlayer'] = -1
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
 
@@ -210,6 +212,7 @@ def page_action():
 		# When changing between Misere/Open Misere, and any other type of bet
 		# all the relevant data has to be reset
 		if action == 'setBetAmount':
+			game_data['betPlayer'] = player
 			betAmount = int(bottle.request.forms.get('betAmount'))
 			game_data['betAmount'] = betAmount
 			# If the bet suit/type was a misere, then setting the bet amount
@@ -218,6 +221,7 @@ def page_action():
 				game_data['betSuit'] = ''
 			markWinningCard()
 		if action == 'setBetSuit':
+			game_data['betPlayer'] = player
 			betSuit = bottle.request.forms.get('betSuit')
 			# If the bet suit/type is changing to, from or between misere bets,
 			# the bet amount should be reset

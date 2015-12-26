@@ -101,9 +101,9 @@ function updateGameView(data, status) {
 		}
 		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
 		var betInfo = 'There is no bet';
-		if (data.betAmount != -1 || data.betSuit != '') {
+		if (data.betPlayer != -1) {
 			var betValue = 0;
-			betInfo = 'The bet is';
+			betInfo = 'Player ' + (data.betPlayer + 1) + ' has bet';
 			// calculate bet name
 			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
 			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
