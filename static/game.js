@@ -26,10 +26,10 @@ function makeCardText(cardname) {
 		if (is_trump && show_trump == 'text')
 			result = '<td><span class="red">' + cardname + ' (T)</span></td>';
 		else
-			result = '<td><span class="red">' + cardname + ' (T)</span></td>';
+			result = '<td><span class="red">' + cardname + '</span></td>';
 	} else {
 		if (is_trump && show_trump == 'text')
-			result = '<td><span class="red">' + cardname + '</span></td>';
+			result = '<td><span>' + cardname + ' (T)</span></td>';
 		else
 			result = '<td><span>' + cardname + '</span></td>';
 	}
