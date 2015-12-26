@@ -41,6 +41,7 @@ game_data = {
 	'kitty': [],
 	'table': [],
 	'floor': [],
+	'tricks': [0, 0],
 	'version_id': 0,
 	'betAmount': -1,
 	'betSuit': ''
@@ -91,6 +92,7 @@ def actionDeal():
 	game_data['kitty'] = []
 	game_data['table'] = []
 	game_data['floor'] = []
+	game_data['tricks'] = [0, 0]
 	random.shuffle(deck_init)
 	for player in range(1, 5):
 		for c in range(10*(player-1), 10*player):
@@ -175,6 +177,18 @@ def page_action():
 		# Clear the table
 		if action == 'clear':
 			if (game_data['table']):
+				hasDiscard = False
+				for i in game_data['table']:
+					if i['state'] == 'discarded':
+						hasDiscard = True
+				if not((hasDiscard and len(game_data['table']) == 3) or ((not hasDiscard) and len(game_data['table']) == 4)):
+					return
+				for i in game_data['table']:
+					if i['state'] != 'discarded' and i['winning']:
+						if i['player'] == 0 or i['player'] == 2:
+							game_data['tricks'][0] += 1
+						else:
+							game_data['tricks'][1] += 1
 				game_data['floor'] = game_data['table']
 				game_data['floor'].reverse();
 				game_data['table'] = []
