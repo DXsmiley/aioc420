@@ -177,6 +177,12 @@ def page_action():
 		# Clear the table
 		if action == 'clear':
 			if (game_data['table']):
+				hasDiscard = False
+				for i in game_data['table']:
+					if i['state'] == 'discarded':
+						hasDiscard = True
+				if not((hasDiscard and len(game_data['table']) == 3) or ((not hasDiscard) and len(game_data['table']) == 4)):
+					return
 				for i in game_data['table']:
 					if i['state'] != 'discarded' and i['winning']:
 						if i['player'] == 0 or i['player'] == 2:
