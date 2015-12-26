@@ -102,7 +102,7 @@ function updateGameView(data, status) {
 			if (betValue) betInfo += ' (' + betValue + ' points)';
 		}
 		$("#betInfo").text(betInfo);
-		last_gamedata_version = data.version_id
+		last_gamedata_version = data.version_id;
 	}
 }
 
