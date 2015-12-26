@@ -85,6 +85,7 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
+		$("#trickState").html(''+data.tricks[0]+' : '+data.tricks[1]);
 		var betInfo = 'There is no bet';
 		if (data.betAmount != -1 || data.betSuit != '') {
 			var betValue = 0;
