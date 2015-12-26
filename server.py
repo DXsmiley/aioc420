@@ -190,11 +190,7 @@ def page_action():
 					game_data['floor'].remove(i)
 					break
 			game_data['hands'][player].append(card)
-<<<<<<< HEAD
 			markWinningCard()			
-		if action == 'setTrump':
-			set_trump(suit)
-=======
 		# When changing between Misere/Open Misere, and any other type of bet
 		# all the relevant data has to be reset
 		if action == 'setBetAmount':
@@ -213,7 +209,6 @@ def page_action():
 			game_data['betSuit'] = betSuit
 			# Set the trump suit
 			set_trump(getTrump(betSuit))
->>>>>>> master
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
