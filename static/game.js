@@ -2,6 +2,7 @@ var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
 var show_trump = 'colour';
+var spectating = false;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -59,30 +60,45 @@ function makeTableTable(cards) {
 	return played_html;
 }
 
+function makeHandTable(hand, buttons) {
+	var hand_html = '<table>';
+	for (i in hand) {
+		hand_html += '<tr>';
+		hand_html += '<td>' + makeCardText(hand[i]) + '</td>';
+		if (buttons) {
+			var button_label = 'Play';
+			if (hand.length > 10) {
+				button_label = 'Discard';
+			}
+			hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">' + button_label + '</button></td>';
+		}
+		hand_html += '</tr>';
+	}
+	hand_html += '</table>';
+	return hand_html
+}
+
+function updateSpectatorView(data, status) {
+	if (data.version_id != last_gamedata_version) {
+		for (var i = 0; i < 4; i++) {
+			var obj_id = "#player" + (i + 1) + "Cards";
+			$(obj_id).html(makeHandTable(data.hands[i]), false);
+		}
+		$("#playedCards").html(makeTableTable(data.table));
+		$("#floorCards").html(makeTableTable(data.floor));
+		last_gamedata_version = data.version_id;
+	}
+}
+
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
-		var myhand = data.hands[player_id];
-		var table = data.table;
-		table.reverse();
+		data.table.reverse();
 		// console.log(data.kitty, data.kitty.length);
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		hand_html = '<table>';
-		for (i in myhand) {
-			hand_html += '<tr>';
-			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
-			var button_label = 'Play';
-			if (myhand.length > 10) {
-				button_label = 'Discard';
-			}
-			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">' + button_label + '</button></td>';
-			hand_html += '</tr>';
-			// console.log(myhand[i], t);
-		}
-		hand_html += '</table>';
 		// console.log(hand_html);
-		$("#myCards").html(hand_html);
+		$("#myCards").html(makeHandTable(data.hands[player_id], true));
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
 		var betInfo = 'There is no bet';
@@ -107,13 +123,17 @@ function updateGameView(data, status) {
 			if (betValue) betInfo += ' (' + betValue + ' points)';
 		}
 		$("#betInfo").text(betInfo);
-		last_gamedata_version = data.version_id
+		last_gamedata_version = data.version_id;
 	}
 }
 
 // Update the game view and set a timer to check for new data.
 function updateGameViewSetTimer(data, status) {
-	updateGameView(data, status);
+	if (spectating) {
+		updateSpectatorView(data, status);
+	} else {
+		updateGameView(data, status);
+	}
 	setTimeout(getGameData, 300);
 }
 
