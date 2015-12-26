@@ -78,14 +78,43 @@ function makeHandTable(hand, buttons) {
 	return hand_html
 }
 
+function makeBetText(betAmount, betSuit) {
+	var betInfo = 'There is no bet';
+	if (betAmount != -1 || betSuit != '') {
+		var betValue = 0;
+		betInfo = 'The bet is';
+		// calculate bet name
+		if (betAmount != -1) betInfo += ' ' + betAmount;
+		if (betSuit != '') betInfo += ' ' + betSuit;
+		// calculate bet value
+		if (betSuit == 'Misere') betValue = 250;
+		else if (betSuit == 'Open Misere') betValue = 500;
+		else if (betAmount != -1 && betSuit != '') {
+			betValue = 100 * (betAmount - 6);
+			if (betSuit == 'Spades') betValue += 40;
+			if (betSuit == 'Clubs') betValue += 60;
+			if (betSuit == 'Diamonds') betValue += 80;
+			if (betSuit == 'Hearts') betValue += 100;
+			if (betSuit == 'No Trump') betValue += 120;
+		}
+		// betValue == 0 means to not display it
+		if (betValue) betInfo += ' (' + betValue + ' points)';
+	}
+	return betInfo;
+}
+
 function updateSpectatorView(data, status) {
 	if (data.version_id != last_gamedata_version) {
+		trump_suit = getTrump(data.betSuit);
+		data.table.reverse();
+		data.floor.reverse();
 		for (var i = 0; i < 4; i++) {
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
+		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -95,34 +124,12 @@ function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
 		data.table.reverse();
-		// console.log(data.kitty, data.kitty.length);
+		data.floor.reverse();
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		// console.log(hand_html);
 		$("#myCards").html(makeHandTable(data.hands[player_id], true));
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
-		var betInfo = 'There is no bet';
-		if (data.betAmount != -1 || data.betSuit != '') {
-			var betValue = 0;
-			betInfo = 'The bet is';
-			// calculate bet name
-			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
-			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
-			// calculate bet value
-			if (data.betSuit == 'Misere') betValue = 250;
-			else if (data.betSuit == 'Open Misere') betValue = 500;
-			else if (data.betAmount != -1 && data.betSuit != '') {
-				betValue = 100 * (data.betAmount - 6);
-				if (data.betSuit == 'Spades') betValue += 40;
-				if (data.betSuit == 'Clubs') betValue += 60;
-				if (data.betSuit == 'Diamonds') betValue += 80;
-				if (data.betSuit == 'Hearts') betValue += 100;
-				if (data.betSuit == 'No Trump') betValue += 120;
-			}
-			// betValue == 0 means to not display it
-			if (betValue) betInfo += ' (' + betValue + ' points)';
-		}
-		$("#betInfo").text(betInfo);
+		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
 		last_gamedata_version = data.version_id;
 	}
 }
