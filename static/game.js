@@ -57,59 +57,54 @@ function makeTableTable(cards) {
 }
 
 // Update the game view with the given data.
-function updateGameViewNoChecks(data, status) {
-	trump_suit = getTrump(data.betSuit);
-	var myhand = data.hands[player_id];
-	var table = data.table;
-	table.reverse();
-	// console.log(data.kitty, data.kitty.length);
-	$('#kittyCards').text(data.kitty.length + ' cards');
-	hand_html = '<table>';
-	for (i in myhand) {
-		hand_html += '<tr>';
-		hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
-		var button_label = 'Play';
-		if (myhand.length > 10) {
-			button_label = 'Discard';
-		}
-		hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">' + button_label + '</button></td>';
-		hand_html += '</tr>';
-		// console.log(myhand[i], t);
-	}
-	hand_html += '</table>';
-	// console.log(hand_html);
-	$("#myCards").html(hand_html);
-	$("#playedCards").html(makeTableTable(data.table));
-	$("#floorCards").html(makeTableTable(data.floor));
-	var betInfo = 'There is no bet';
-	if (data.betAmount != -1 || data.betSuit != '') {
-		var betValue = 0;
-		betInfo = 'The bet is';
-		// calculate bet name
-		if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
-		if (data.betSuit != '') betInfo += ' ' + data.betSuit;
-		// calculate bet value
-		if (data.betSuit == 'Misere') betValue = 250;
-		else if (data.betSuit == 'Open Misere') betValue = 500;
-		else if (data.betAmount != -1 && data.betSuit != '') {
-			betValue = 100 * (data.betAmount - 6);
-			if (data.betSuit == 'Spades') betValue += 40;
-			if (data.betSuit == 'Clubs') betValue += 60;
-			if (data.betSuit == 'Diamonds') betValue += 80;
-			if (data.betSuit == 'Hearts') betValue += 100;
-			if (data.betSuit == 'No Trump') betValue += 120;
-		}
-		// betValue == 0 means to not display it
-		if (betValue) betInfo += ' (' + betValue + ' points)';
-	}
-	$("#betInfo").text(betInfo);
-	last_gamedata_version = data.version_id
-}
-
-
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
-		updateGameViewNoChecks(data, status);
+		trump_suit = getTrump(data.betSuit);
+		var myhand = data.hands[player_id];
+		var table = data.table;
+		table.reverse();
+		// console.log(data.kitty, data.kitty.length);
+		$('#kittyCards').text(data.kitty.length + ' cards');
+		hand_html = '<table>';
+		for (i in myhand) {
+			hand_html += '<tr>';
+			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
+			var button_label = 'Play';
+			if (myhand.length > 10) {
+				button_label = 'Discard';
+			}
+			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">' + button_label + '</button></td>';
+			hand_html += '</tr>';
+			// console.log(myhand[i], t);
+		}
+		hand_html += '</table>';
+		// console.log(hand_html);
+		$("#myCards").html(hand_html);
+		$("#playedCards").html(makeTableTable(data.table));
+		$("#floorCards").html(makeTableTable(data.floor));
+		var betInfo = 'There is no bet';
+		if (data.betAmount != -1 || data.betSuit != '') {
+			var betValue = 0;
+			betInfo = 'The bet is';
+			// calculate bet name
+			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
+			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
+			// calculate bet value
+			if (data.betSuit == 'Misere') betValue = 250;
+			else if (data.betSuit == 'Open Misere') betValue = 500;
+			else if (data.betAmount != -1 && data.betSuit != '') {
+				betValue = 100 * (data.betAmount - 6);
+				if (data.betSuit == 'Spades') betValue += 40;
+				if (data.betSuit == 'Clubs') betValue += 60;
+				if (data.betSuit == 'Diamonds') betValue += 80;
+				if (data.betSuit == 'Hearts') betValue += 100;
+				if (data.betSuit == 'No Trump') betValue += 120;
+			}
+			// betValue == 0 means to not display it
+			if (betValue) betInfo += ' (' + betValue + ' points)';
+		}
+		$("#betInfo").text(betInfo);
+		last_gamedata_version = data.version_id
 	}
 }
 
@@ -207,8 +202,9 @@ function getGameData() {
 
 function setTrumpDisplay(displayType) {
 	show_trump = displayType;
+	last_gamedata_version = -1;
 	$.get("/gamestate",
-		updateGameViewNoChecks
+		updateGameView
 	);
 }
 
