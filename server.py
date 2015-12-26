@@ -91,16 +91,24 @@ def actionDeal():
 		game_data['kitty'].append(deck_init[c])
 	set_trump('No Trump')
 
-def markWinningCard():
-	highest = 0
-	for i in game_data['table']:
-		if i['state'] != 'discarded':
-			i['winning'] = False
-			highest = max(highest, card_val[i['card']])
-	for i in game_data['table']:
-		if i['state'] != 'discarded' and card_val[i['card']] == highest:
-			i['winning'] = True
+def cardGetSuit(cardname):
+	suit = 'Joker'
+	if cardname != 'Joker':
+		suit = cardname.split()[2]
+	return suit
 
+def markWinningCard():
+	if len(game_data['table']) > 0:
+		first_suit = cardGetSuit(game_data['table'][0]['card'])
+		highest = -1
+		for i in game_data['table']:
+			if i['state'] != 'discarded':
+				if cardGetSuit(i['card']) == first_suit or card_val[i['card']] >= 100:
+					i['winning'] = False
+					highest = max(highest, card_val[i['card']])
+		for i in game_data['table']:
+			if card_val[i['card']] == highest:
+				i['winning'] = True
 
 @bottle.route('/')
 def page_index():
