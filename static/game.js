@@ -43,8 +43,11 @@ function makeTableTable(cards) {
 		var card = cards[i].card;
 		var cardname = card;
 		if (cards[i].state == 'discarded') cardname = '(discarded)';
-		played_html += '<tr>';
-		played_html += '<td>Player ' + (pid + 1) + ': ' + makeCardText(cardname) + '</td>';
+ 		played_html += '<tr><td>';
+ 		if (cards[i].winning) played_html += '<strong>';
+ 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
+ 		if (cards[i].winning) played_html += '</strong>';
+ 		played_html += '</td>';
 		if (pid == player_id) {
 			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
 		} else {
