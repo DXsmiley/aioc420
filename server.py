@@ -41,8 +41,9 @@ game_data = {
 	'kitty': [],
 	'table': [],
 	'floor': [],
-	'trump': 'No Trump',
-	'version_id': 0
+	'version_id': 0,
+	'betAmount': -1,
+	'betSuit': ''
 }
 
 do_save_data = False
@@ -56,9 +57,16 @@ def sort_hands():
 	for i in game_data['hands']:
 		i.sort(key = lambda x: card_val.get(x, -1), reverse = True)
 
+
+def isMisere(string):
+	return string == 'Misere' or string == 'Open Misere'
+
+def getTrump(betSuit):
+	if isMisere(betSuit) or betSuit == '': return 'No Trump'
+	else: return betSuit
+
 def set_trump(suit):
 	global card_val
-	game_data['trump'] = suit
 	card_val = copy.copy(card_val_init)
 	for i in card_val:
 		if suit in i:
@@ -90,6 +98,9 @@ def actionDeal():
 	for c in range(40, 43):
 		game_data['kitty'].append(deck_init[c])
 	set_trump('No Trump')
+	# game_data['betSuit'] also can take on 'Misere' and 'Open Misere' values
+	game_data['betAmount'] = -1
+	game_data['betSuit'] = ''
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
@@ -126,7 +137,6 @@ def page_action():
 	action = bottle.request.forms.get('action')
 	card = bottle.request.forms.get('card')
 	player = int(bottle.request.forms.get('player'))
-	suit = bottle.request.forms.get('suit')
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
 		# Play or discard a card
@@ -164,9 +174,11 @@ def page_action():
 			game_data['kitty'] = []
 		# Clear the table
 		if action == 'clear':
-			game_data['floor'] = game_data['table']
-			game_data['table'] = []
-			# game_data['table'] = [-1] * len(game_data['table'])
+			if (game_data['table']):
+				game_data['floor'] = game_data['table']
+				game_data['floor'].reverse();
+				game_data['table'] = []
+				# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
 			# Remove the thing from the table and the floor.
 			for i in game_data['table']:
@@ -178,9 +190,30 @@ def page_action():
 					game_data['floor'].remove(i)
 					break
 			game_data['hands'][player].append(card)
+<<<<<<< HEAD
 			markWinningCard()			
 		if action == 'setTrump':
 			set_trump(suit)
+=======
+		# When changing between Misere/Open Misere, and any other type of bet
+		# all the relevant data has to be reset
+		if action == 'setBetAmount':
+			betAmount = int(bottle.request.forms.get('betAmount'))
+			game_data['betAmount'] = betAmount
+			# If the bet suit/type was a misere, then setting the bet amount
+			# should reset it
+			if isMisere(game_data['betSuit']):
+				game_data['betSuit'] = ''
+		if action == 'setBetSuit':
+			betSuit = bottle.request.forms.get('betSuit')
+			# If the bet suit/type is changing to, from or between misere bets,
+			# the bet amount should be reset
+			if isMisere(game_data['betSuit']) or isMisere(betSuit):
+				game_data['betAmount'] = -1
+			game_data['betSuit'] = betSuit
+			# Set the trump suit
+			set_trump(getTrump(betSuit))
+>>>>>>> master
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
