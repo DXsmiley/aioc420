@@ -1,12 +1,15 @@
 var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
+var poll_timer = null;
 var show_trump = 'colour';
 var spectating = false;
+var query_timeout = 2000;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
 }
+
 function getTrump(betSuit) {
 	if (isMisere(betSuit) || betSuit == '') return 'No Trump';
 	else return betSuit;
@@ -37,19 +40,20 @@ function makeCardText(cardname) {
 	return result;
 }
 
-function makeTableTable(cards) {
+function makeTableTable(cards, can_discard) {
 	var played_html = '<table>';
 	for (i in cards) {
 		var pid = cards[i].player;
 		var card = cards[i].card;
 		var cardname = card;
-		if (cards[i].state == 'discarded') cardname = '(discarded)';
+		if (cards[i].state == 'discarded' && (pid != player_id || !can_discard)) cardname = '(discarded)';
+		else if (cards[i].state == 'discarded') cardname += ' (discarded)';
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
 		if (cards[i].winning) played_html += '</strong>';
 		played_html += '</td>';
-		if (pid == player_id) {
+		if (pid == player_id && can_discard) {
 			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
 		} else {
 			played_html += '<td></td>';
@@ -134,55 +138,57 @@ function updateGameView(data, status) {
 	}
 }
 
-// Update the game view and set a timer to check for new data.
-function updateGameViewSetTimer(data, status) {
+function updateTheView(data, status) {
+	$("p.alert").hide();
+	poll_timer = window.setTimeout(getGameData, 400);
 	if (spectating) {
 		updateSpectatorView(data, status);
 	} else {
 		updateGameView(data, status);
 	}
-	setTimeout(getGameData, 300);
+}
+
+function handleUpdateError(request, status, error) {
+	poll_timer = window.setTimeout(getGameData, 800);
+	$("p.alert").show();
+	console.log('Ajax request failed:', status, ', ', error)
+}
+
+function postAction(action_data) {
+	window.clearTimeout(poll_timer);
+	action_data.player = player_id;
+	$.ajax({
+		'type': 'POST',
+		'url': '/action',
+		'data': action_data,
+		'dataType': 'json',
+		'timeout': query_timeout,
+		'success': updateTheView,
+		'error': handleUpdateError,
+	});
 }
 
 function changePlayer(pid) {
 	player_id = pid;
 	last_gamedata_version = -1;
 	$("#yourName").text("You are player " + (pid + 1));
+	getGameData();
 }
 
 function cardPlay(card) {
-	// console.log('Playing card: ', card)
-	$.post("/action",
-		{
-			'action': 'play',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
-}
-
-function cardDisc(card) {
-	// console.log('Playing card: ', card)
-	$.post("/action",
-		{
-			'action': 'discard',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
+	window.clearTimeout(poll_timer);
+	postAction({
+		'action': 'play',
+		'card': card
+	});
 }
 
 function cardPickup(card) {
-	$.post("/action",
-		{
-			'action': 'pickup',
-			'card': card,
-			'player': player_id
-		},
-		updateGameView
-	);
+	window.clearTimeout(poll_timer);
+	postAction({
+		'action': 'pickup',
+		'card': card
+	});
 }
 
 function actionRedeal() {
@@ -193,49 +199,41 @@ function actionRedeal() {
 }
 
 function uniAction(action_name) {
-	$.post('/action',
-		{
-			'action': action_name,
-			'player': player_id
-		},
-		updateGameView
-	);
+	window.clearTimeout(poll_timer);
+	postAction({'action': action_name});
 }
 
 function setBetAmount(betAmount) {
-	$.post('/action',
-		{
-			'action': 'setBetAmount',
-			'player': player_id,
-			'betAmount': betAmount
-		},
-		updateGameView
-	);
+	window.clearTimeout(poll_timer);
+	postAction({
+		'action': 'setBetAmount',
+		'betAmount': betAmount
+	});
 }
 
 function setBetSuit(betSuit) {
-	$.post('/action',
-		{
-			'action': 'setBetSuit',
-			'player': player_id,
-			'betSuit': betSuit
-		},
-		updateGameView
-	);
+	window.clearTimeout(poll_timer);
+	postAction({
+		'action': 'setBetSuit',
+		'betSuit': betSuit
+	});
 }
 
 function getGameData() {
-	$.get("/gamestate",
-		updateGameViewSetTimer
-	);
+	window.clearTimeout(poll_timer);
+	$.ajax({
+		'type': 'GET',
+		'url': '/gamestate',
+		'timeout': query_timeout,
+		'success': updateTheView,
+		'error': handleUpdateError,
+	});
 }
 
 function setTrumpDisplay(displayType) {
 	show_trump = displayType;
 	last_gamedata_version = -1;
-	$.get("/gamestate",
-		updateGameView
-	);
+	getGameData();
 }
 
-setTimeout(getGameData, 1000);
+poll_timer = window.setTimeout(getGameData, 1000);
