@@ -63,6 +63,7 @@ function makeTableTable(cards) {
 
 // Update the game view with the given data.
 function updateGameView(data, status) {
+	$("p.alert").hide();
 	poll_timer = window.setTimeout(getGameData, 400);
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
@@ -116,6 +117,7 @@ function updateGameView(data, status) {
 
 function handleUpdateError(request, status, error) {
 	poll_timer = window.setTimeout(getGameData, 800);
+	$("p.alert").show();
 	console.log('Ajax request failed:', status, ', ', error)
 }
 
