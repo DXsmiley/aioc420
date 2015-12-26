@@ -178,21 +178,23 @@ def page_action():
 		if action == 'clear':
 			if (game_data['table']):
 				hasDiscard = False
+				can_discard = True
 				for i in game_data['table']:
 					if i['state'] == 'discarded':
 						hasDiscard = True
 				if not((hasDiscard and len(game_data['table']) == 3) or ((not hasDiscard) and len(game_data['table']) == 4)):
-					return
-				for i in game_data['table']:
-					if i['state'] != 'discarded' and i['winning']:
-						if i['player'] == 0 or i['player'] == 2:
-							game_data['tricks'][0] += 1
-						else:
-							game_data['tricks'][1] += 1
-				game_data['floor'] = game_data['table']
-				game_data['floor'].reverse();
-				game_data['table'] = []
-				# game_data['table'] = [-1] * len(game_data['table'])
+					can_discard = False # Returning nothing here causes an error in the client because invalid json data.
+				if can_discard:
+					for i in game_data['table']:
+						if i['state'] != 'discarded' and i['winning']:
+							if i['player'] == 0 or i['player'] == 2:
+								game_data['tricks'][0] += 1
+							else:
+								game_data['tricks'][1] += 1
+					game_data['floor'] = game_data['table']
+					game_data['floor'].reverse();
+					game_data['table'] = []
+					# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
 			# Remove the thing from the table and the floor.
 			for i in game_data['table']:
