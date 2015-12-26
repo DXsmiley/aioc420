@@ -1,6 +1,7 @@
 var last_gamedata_version = -1;
 var player_id = -1;
 var trump_suit;
+var show_trump = 'colour';
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -19,12 +20,18 @@ function makeCardText(cardname) {
 	if (trump_suit == 'Diamonds' && cardname == 'Jack of Hearts') is_trump = true; 
 	if (trump_suit == 'Spades' && cardname == 'Jack of Clubs') is_trump = true; 
 	if (trump_suit == 'Clubs' && cardname == 'Jack of Spades') is_trump = true; 
-	if (is_trump) {
+	if (is_trump && show_trump == 'colour') {
 		result = '<span class="blue">' + cardname + '</span>';
 	} else if (cardname.indexOf('Diamonds') != -1 || cardname.indexOf('Hearts') != -1) {
-		result = '<span class="red">' + cardname + '</span>';
+		if (is_trump && show_trump == 'text')
+			result = '<span class="red">' + cardname + ' (T)</span>';
+		else
+			result = '<span class="red">' + cardname + '</span>';
 	} else {
-		result = '<span>' + cardname + '</span>';
+		if (is_trump && show_trump == 'text')
+			result = '<span>' + cardname + ' (T)</span>';
+		else
+			result = '<span>' + cardname + '</span>';
 	}
 	return result;
 }
@@ -193,6 +200,14 @@ function setBetSuit(betSuit) {
 function getGameData() {
 	$.get("/gamestate",
 		updateGameViewSetTimer
+	);
+}
+
+function setTrumpDisplay(displayType) {
+	show_trump = displayType;
+	last_gamedata_version = -1;
+	$.get("/gamestate",
+		updateGameView
 	);
 }
 
