@@ -21,17 +21,17 @@ function makeCardText(cardname) {
 	if (trump_suit == 'Spades' && cardname == 'Jack of Clubs') is_trump = true; 
 	if (trump_suit == 'Clubs' && cardname == 'Jack of Spades') is_trump = true; 
 	if (is_trump && show_trump == 'colour') {
-		result = '<td><span class="blue">' + cardname + '</span></td>';
+		result = '<span class="blue">' + cardname + '</span>';
 	} else if (cardname.indexOf('Diamonds') != -1 || cardname.indexOf('Hearts') != -1) {
 		if (is_trump && show_trump == 'text')
-			result = '<td><span class="red">' + cardname + ' (T)</span></td>';
+			result = '<span class="red">' + cardname + ' (T)</span>';
 		else
-			result = '<td><span class="red">' + cardname + '</span></td>';
+			result = '<span class="red">' + cardname + '</span>';
 	} else {
 		if (is_trump && show_trump == 'text')
-			result = '<td><span>' + cardname + ' (T)</span></td>';
+			result = '<span>' + cardname + ' (T)</span>';
 		else
-			result = '<td><span>' + cardname + '</span></td>';
+			result = '<span>' + cardname + '</span>';
 	}
 	return result;
 }
@@ -43,11 +43,11 @@ function makeTableTable(cards) {
 		var card = cards[i].card;
 		var cardname = card;
 		if (cards[i].state == 'discarded') cardname = '(discarded)';
- 		played_html += '<tr><td>';
- 		if (cards[i].winning) played_html += '<strong>';
- 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
- 		if (cards[i].winning) played_html += '</strong>';
- 		played_html += '</td>';
+		played_html += '<tr><td>';
+		if (cards[i].winning) played_html += '<strong>';
+		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
+		if (cards[i].winning) played_html += '</strong>';
+		played_html += '</td>';
 		if (pid == player_id) {
 			played_html += '<td><button onclick="cardPickup(\'' + card + '\');">Pickup</button></td>';
 		} else {
