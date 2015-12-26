@@ -110,6 +110,7 @@ function updateGameViewNoChecks(data, status) {
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		updateGameViewNoChecks(data, status);
+	}
 }
 
 // Update the game view and set a timer to check for new data.
