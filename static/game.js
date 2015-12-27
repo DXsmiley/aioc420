@@ -63,6 +63,34 @@ function makeTableTable(cards, can_discard) {
 	return played_html;
 }
 
+function makeScoreState(score) {
+	var my_score, other_score;
+	if (player_id == 0 || player_id == 2) {
+		my_score = score[0];
+		other_score = score[1];
+	} else {
+		my_score = score[1];
+		other_score = score[0];
+	}
+	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
+}
+
+function makeTrickState(tricks) {
+		var tshtml, my_score, other_score;
+		if (player_id == 0 || player_id == 2) {
+			my_score = tricks[0];
+			other_score = tricks[1];
+		} else {
+			my_score = tricks[1];
+			other_score = tricks[0];
+		}
+		tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
+		if (my_score + other_score == 10) {
+			tshtml += '<button onclick="finishRound();">Finish Round</button>';
+		}
+		return tshtml;
+}
+
 // Update the game view with the given data.
 function updateGameView(data, status) {
 	$("p.alert").hide();
@@ -91,15 +119,8 @@ function updateGameView(data, status) {
 		$("#myCards").html(hand_html);
 		$("#playedCards").html(makeTableTable(data.table, true));
 		$("#floorCards").html(makeTableTable(data.floor, false));
-		var my_score, other_score;
-		if (player_id == 0 || player_id == 2) {
-			my_score = data.tricks[0];
-			other_score = data.tricks[1];
-		} else {
-			my_score = data.tricks[1];
-			other_score = data.tricks[0];
-		}
-		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
+		$("#scoreState").html(makeScoreState(data.score));
+		$("#trickState").html(makeTrickState(data.tricks));
 		var betInfo = 'There is no bet';
 		if (data.betPlayer != -1) {
 			var betValue = 0;
@@ -195,6 +216,11 @@ function setBetSuit(betSuit) {
 		'action': 'setBetSuit',
 		'betSuit': betSuit
 	});
+}
+
+function finishRound() {
+	console.log("finishing round...");
+	uniAction('finishRound');
 }
 
 function getGameData() {

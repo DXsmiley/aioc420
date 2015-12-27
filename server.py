@@ -41,6 +41,7 @@ game_data = {
 	'kitty': [],
 	'table': [],
 	'floor': [],
+	'score': [0, 0],
 	'tricks': [0, 0],
 	'version_id': 0,
 	'betPlayer': -1,
@@ -93,6 +94,7 @@ def actionDeal():
 	game_data['kitty'] = []
 	game_data['table'] = []
 	game_data['floor'] = []
+	game_data['score'] = [0, 0]
 	game_data['tricks'] = [0, 0]
 	random.shuffle(deck_init)
 	for player in range(1, 5):
@@ -231,6 +233,10 @@ def page_action():
 			# Set the trump suit
 			set_trump(getTrump(betSuit))
 			markWinningCard()
+		if action == 'finishRound':
+			game_data['score'][0] += 10
+			game_data['score'][1] += 20
+			game_data['tricks'][0] = game_data['tricks'][1] = 0
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
