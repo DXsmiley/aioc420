@@ -110,11 +110,15 @@ function makeHandTable(hand, buttons) {
 	return hand_html
 }
 
-function makeBetText(names, betPlayer, betAmount, betSuit) {
+function makeBetText(data) {
+	var names = data.names, betPlayer = data.betPlayer, betAmount = data.betAmount,
+		betSuit = data.betSuit, isFixed = data.kitty.length == 0;
 	var betInfo = 'There is no bet';
 	if (betPlayer != -1) {
 		var betValue = 0;
-		betInfo = getDisplayName(names, betPlayer) + ' has bet';
+		betInfo = getDisplayName(names, betPlayer);
+		if (isFixed) betInfo += ' has bet';
+		else betInfo += ' is betting';
 		// calculate bet name
 		if (betAmount != -1) betInfo += ' ' + betAmount;
 		if (betSuit != '') betInfo += ' ' + betSuit;
@@ -131,6 +135,7 @@ function makeBetText(names, betPlayer, betAmount, betSuit) {
 		}
 		// betValue == 0 means to not display it
 		if (betValue) betInfo += ' (' + betValue + ' points)';
+		if (isFixed) betInfo = '<strong>' + betInfo + '</strong>';
 	}
 	return betInfo;
 }
@@ -158,7 +163,7 @@ function updateSpectatorView(data, status) {
 		}
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").text(makeBetText(data.names, data.betPlayer, data.betAmount, data.betSuit));
+		$("#betInfo").html(makeBetText(data));
 		$("#player1Score").text(data.tricks[0] + ' tricks');
 		$("#player2Score").text(data.tricks[1] + ' tricks');
 		$("#player3Score").text(data.tricks[0] + ' tricks');
@@ -178,7 +183,7 @@ function updateGameView(data, status) {
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").text(makeBetText(data.names, data.betPlayer, data.betAmount, data.betSuit));
+		$("#betInfo").html(makeBetText(data));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
 		can_grab = getCanGrab(data);
