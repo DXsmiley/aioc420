@@ -5,7 +5,6 @@ var poll_timer = null;
 var show_trump = 'colour';
 var spectating = false;
 var query_timeout = 2000;
-var can_grab = false;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -177,7 +176,8 @@ function updateGameView(data, status) {
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
-		can_grab = getCanGrab(data);
+		$("#buttonGrab").prop('disabled', !getCanGrab(data));
+		$("button.bet").prop('disabled', (data.kitty.length == 0));
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -213,6 +213,10 @@ function postAction(action_data) {
 }
 
 function changePlayer(pid) {
+	// As soon as we become an actual player, we can click on these buttons.
+	$("#buttonClear").prop("disabled", false);
+	$("#buttonRedeal").prop("disabled", false);
+	$("#buttonRename").prop("disabled", false)
 	player_id = pid;
 	last_gamedata_version = -1;
 	getGameData();
@@ -242,11 +246,9 @@ function actionRedeal() {
 }
 
 function actionGrab() {
-	if (can_grab) {
-		var query = window.confirm("Grab the kitty? You will no longer be able to change the bet.");
-		if (query) {
-			uniAction('grab');
-		}
+	var query = window.confirm("Grab the kitty? You will no longer be able to change the bet.");
+	if (query) {
+		uniAction('grab');
 	}
 }
 

@@ -24,31 +24,31 @@
 
 						<h2>Controls</h2>
 						<h3>Actions</h3>
-						<button onclick="uniAction('clear');">Clear Table</button>
-						<button onclick="actionRedeal();">Redeal</button>
-						<button onclick="actionGrab()">Grab Kitty</button>
+						<button disabled id="buttonClear"  onclick="uniAction('clear');">Clear Table</button>
+						<button disabled id="buttonRedeal" onclick="actionRedeal();">Redeal</button>
+						<button disabled id="buttonGrab"   onclick="actionGrab()">Grab Kitty</button>
 						<h3>Change Player</h3>
 						<button onclick="changePlayer(0);">Be player 1</button>
 						<button onclick="changePlayer(1);">Be player 2</button>
 						<button onclick="changePlayer(2);">Be player 3</button>
 						<button onclick="changePlayer(3);">Be player 4</button>
 						<br>
-						<button onclick="changeName();">Change Name</button>
+						<button disabled id="buttonRename" onclick="changeName();">Change Name</button>
 						<h3>Set Bet</h3>
-						<button onclick="setBetAmount(6);">6</button>
-						<button onclick="setBetAmount(7);">7</button>
-						<button onclick="setBetAmount(8);">8</button>
-						<button onclick="setBetAmount(9);">9</button>
-						<button onclick="setBetAmount(10);">10</button>
+						<button disabled class="bet" onclick="setBetAmount(6);">6</button>
+						<button disabled class="bet" onclick="setBetAmount(7);">7</button>
+						<button disabled class="bet" onclick="setBetAmount(8);">8</button>
+						<button disabled class="bet" onclick="setBetAmount(9);">9</button>
+						<button disabled class="bet" onclick="setBetAmount(10);">10</button>
 						<br>
-						<button onclick="setBetSuit('Spades');">&spades;</button>
-						<button onclick="setBetSuit('Clubs');">&clubs;</button>
-						<button onclick="setBetSuit('Diamonds');">&diams;</button>
-						<button onclick="setBetSuit('Hearts');">&hearts;</button>
-						<button onclick="setBetSuit('No Trump');">No Trump</button>
+						<button disabled class="bet" onclick="setBetSuit('Spades');">&spades;</button>
+						<button disabled class="bet" onclick="setBetSuit('Clubs');">&clubs;</button>
+						<button disabled class="bet" onclick="setBetSuit('Diamonds');">&diams;</button>
+						<button disabled class="bet" onclick="setBetSuit('Hearts');">&hearts;</button>
+						<button disabled class="bet" onclick="setBetSuit('No Trump');">No Trump</button>
 						<br>
-						<button onclick="setBetSuit('Misere');">Misere</button>
-						<button onclick="setBetSuit('Open Misere');">Open Misere</button>
+						<button disabled class="bet" onclick="setBetSuit('Misere');">Misere</button>
+						<button disabled class="bet" onclick="setBetSuit('Open Misere');">Open Misere</button>
 						<h3>Trump Display</h3>
 						<button onclick="setTrumpDisplay('colour');">Colour</button>
 						<button onclick="setTrumpDisplay('text');">Text</button>

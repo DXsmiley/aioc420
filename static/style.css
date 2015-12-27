@@ -37,6 +37,10 @@ button:hover {
 	background: #3cb0fd;
 }
 
+button:disabled {
+	background: #a0a0a0;
+}
+
 p.alert {
 	position: absolute;
 	color: red;
