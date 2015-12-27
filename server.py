@@ -167,30 +167,32 @@ def page_action():
 	if 0 <= player < 4:
 		# Play or discard a card
 		if action == 'play':
-			if card in game_data['hands'][player]:
-				if len(game_data['hands'][player]) <= 10:
-					# in this case, play a card
-					# make sure that only one card is played per turn
-					can_play = True
-					for i in game_data['table']:
-						if i['player'] == player:
-							can_play = False
-					if can_play:
+			# prevent betting player's teammate from playing during misere-type bets
+			if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
+				if card in game_data['hands'][player]:
+					if len(game_data['hands'][player]) <= 10:
+						# in this case, play a card
+						# make sure that only one card is played per turn
+						can_play = True
+						for i in game_data['table']:
+							if i['player'] == player:
+								can_play = False
+						if can_play:
+							game_data['table'].append({
+								'player': player,
+								'card': card,
+								'state': 'normal'
+								})
+							game_data['hands'][player].remove(card)
+							markWinningCard()
+					else:
+						# in this case, discard
+						game_data['hands'][player].remove(card)
 						game_data['table'].append({
 							'player': player,
 							'card': card,
-							'state': 'normal'
-							})
-						game_data['hands'][player].remove(card)
-						markWinningCard()
-				else:
-					# in this case, discard
-					game_data['hands'][player].remove(card)
-					game_data['table'].append({
-						'player': player,
-						'card': card,
-						'state': 'discarded'
-					})
+							'state': 'discarded'
+						})
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
