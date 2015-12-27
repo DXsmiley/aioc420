@@ -87,6 +87,15 @@ def set_trump(suit):
 		card_val['Jack of Clubs'] = 199
 		card_val['Jack of Spades'] = 198
 
+def getBetValue(betAmount, betSuit):
+	betValue = 100 * (betAmount - 6)
+	if betSuit == 'Spades': betValue += 40
+	if betSuit == 'Clubs': betValue += 60
+	if betSuit == 'Diamonds': betValue += 80
+	if betSuit == 'Hearts': betValue += 100
+	if betSuit == 'No Trump': betValue += 120
+	return betValue
+
 # Thanks, Gongy!
 def actionDeal():
 	print('Dealing...')
@@ -234,9 +243,25 @@ def page_action():
 			set_trump(getTrump(betSuit))
 			markWinningCard()
 		if action == 'finishRound':
-			game_data['score'][0] += 10
-			game_data['score'][1] += 20
-			game_data['tricks'][0] = game_data['tricks'][1] = 0
+			if game_data['betSuit'] != '':
+				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
+				if isMisere(game_data['betSuit']):
+					# we'll figure it out later :^)
+					game_data['score'][0] += 9001
+				else:
+					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+						if game_data['tricks'][0] >= game_data['betAmount']:
+							game_data['score'][0] += betValue
+						else:
+							game_data['score'][0] -= betValue
+						game_data['score'][1] += 10 * game_data['tricks'][1]
+					else:
+						if game_data['tricks'][1] >= game_data['betAmount']:
+							game_data['score'][1] += betValue
+						else:
+							game_data['score'][1] -= betValue
+						game_data['score'][0] += 10 * game_data['tricks'][0]
+				game_data['tricks'][0] = game_data['tricks'][1] = 0
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
