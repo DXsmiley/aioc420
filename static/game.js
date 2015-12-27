@@ -6,6 +6,14 @@ var show_trump = 'colour';
 var spectating = false;
 var query_timeout = 2000;
 
+function getCardSuit(cardname) {
+	if (cardname.indexOf('Diamonds') != -1) return 'Diamonds';
+	if (cardname.indexOf('Hearts') != -1) return 'Hearts';
+	if (cardname.indexOf('Spades') != -1) return 'Spades';
+	if (cardname.indexOf('Clubs') != -1) return 'Clubs';
+	return trump_suit; // It's the joker, therefore it's a trump.
+}
+
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
 }
@@ -87,17 +95,27 @@ function makeTrickState(betPlayer, betSuit, tricks) {
 	return tshtml;
 }
 
-function makeHandTable(hand, buttons) {
+function makeHandTable(hand, buttons, leading_suit) {
 	var hand_html = '<table>';
+	var forced_to_follow = false;
+	for (i in hand) {
+		if (getCardSuit(hand[i]) == leading_suit) {
+			forced_to_follow = true;
+		}
+	}
 	for (i in hand) {
 		hand_html += '<tr>';
 		hand_html += '<td>' + makeCardText(hand[i]) + '</td>';
 		if (buttons) {
-			var button_label = 'Play';
 			if (hand.length > 10) {
-				button_label = 'Discard';
+				hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">Discard</button></td>';
+			} else {
+				if (!forced_to_follow || getCardSuit(hand[i]) == leading_suit || getCardSuit(hand[i]) == trump_suit) {
+					hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">Play</button></td>';
+				} else {
+					hand_html += '<td></td>';
+				}
 			}
-			hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">' + button_label + '</button></td>';
 		}
 		hand_html += '</tr>';
 	}
