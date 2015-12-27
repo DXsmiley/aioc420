@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Spectating 500</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+
+		<div class="wrapper">
+
+			<p class="alert">Connection Error!</p> 
+
+			<center>
+				<h1>Spectating AIOC 500</h1>
+			</center>
+
+			<p id="betInfo">There is no bet.</p>
+
+			<!-- <h3>Trump Display</h3>
+			<button onclick="setTrumpDisplay('colour');">Colour</button>
+			<button onclick="setTrumpDisplay('text');">Text</button>
+			<button onclick="setTrumpDisplay('none');">None</button>	 -->	
+
+			<table class="layout">
+
+				<tr>
+
+					<td class="layout">
+						<h2>Player 1</h2>
+						<p id="player1Score">0 tricks</p>
+						<div id="player1Cards">Nothing here...</div>
+					</td>
+
+					<td class="layout">
+						<h2>Player 2</h2>
+						<p id="player2Score">0 tricks</p>
+						<div id="player2Cards">Nothing here...</div>
+					</td>
+
+					<td class="layout">
+						<h2>Table</h2>
+						<div id="playedCards">Nothing here...</div>
+						<h2>Floor</h2>
+						<div id="floorCards">Nothing here...</div>
+					</td>
+
+					<td class="layout">
+						<h2>Player 3</h2>
+						<p id="player3Score">0 tricks</p>
+						<div id="player3Cards">Nothing here...</div>
+					</td>
+
+					<td class="layout">
+						<h2>Player 4</h2>
+						<p id="player4Score">0 tricks</p>
+						<div id="player4Cards">Nothing here...</div>
+					</td>
+
+				</tr>
+
+			</table>
+
+		</div>
+	
+	</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="./game.js"></script>
+	<script type="text/javascript">spectating = true;</script>
+</html>
