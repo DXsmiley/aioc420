@@ -75,7 +75,7 @@ function makeScoreState(score) {
 	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 }
 
-function makeTrickState(tricks) {
+function makeTrickState(betPlayer, betSuit, tricks) {
 		var tshtml, my_score, other_score;
 		if (player_id == 0 || player_id == 2) {
 			my_score = tricks[0];
@@ -85,9 +85,18 @@ function makeTrickState(tricks) {
 			other_score = tricks[0];
 		}
 		tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
-		if (my_score + other_score == 10) {
-			tshtml += '<button onclick="finishRound();">Finish Round</button>';
+		var canFinishRound = false
+		if (isMisere(betSuit)) {
+			if (my_score + other_score == 10) canFinishRound = true;
+			if (betPlayer == 0 || betPlayer == 2) {
+				if (tricks[0]) canFinishRound = true;
+			} else {
+				if (tricks[1]) canFinishRound = true;
+			}
+		} else {
+			if (my_score + other_score == 10) canFinishRound = true;
 		}
+		if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
 		return tshtml;
 }
 
@@ -120,7 +129,7 @@ function updateGameView(data, status) {
 		$("#playedCards").html(makeTableTable(data.table, true));
 		$("#floorCards").html(makeTableTable(data.floor, false));
 		$("#scoreState").html(makeScoreState(data.score));
-		$("#trickState").html(makeTrickState(data.tricks));
+		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
 		var betInfo = 'There is no bet';
 		if (data.betPlayer != -1) {
 			var betValue = 0;

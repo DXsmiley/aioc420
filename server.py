@@ -88,6 +88,8 @@ def set_trump(suit):
 		card_val['Jack of Spades'] = 198
 
 def getBetValue(betAmount, betSuit):
+	if betSuit == 'Misere': return 250
+	if betSuit == 'Open Misere': return 500
 	betValue = 100 * (betAmount - 6)
 	if betSuit == 'Spades': betValue += 40
 	if betSuit == 'Clubs': betValue += 60
@@ -103,7 +105,6 @@ def actionDeal():
 	game_data['kitty'] = []
 	game_data['table'] = []
 	game_data['floor'] = []
-	game_data['score'] = [0, 0]
 	game_data['tricks'] = [0, 0]
 	random.shuffle(deck_init)
 	for player in range(1, 5):
@@ -191,13 +192,14 @@ def page_action():
 		if action == 'clear':
 			if (game_data['table']):
 				hasDiscard = False
-				can_discard = True
 				for i in game_data['table']:
 					if i['state'] == 'discarded':
 						hasDiscard = True
-				if not((hasDiscard and len(game_data['table']) == 3) or ((not hasDiscard) and len(game_data['table']) == 4)):
-					can_discard = False # Returning nothing here causes an error in the client because invalid json data.
-				if can_discard:
+				can_clear = False
+				if hasDiscard and len(game_data['table']) == 3: can_clear = True
+				if (not hasDiscard) and len(game_data['table']) == 4: can_clear = True
+				if isMisere(game_data['betSuit']) and len(game_data['table']) == 3: can_clear = True
+				if can_clear:
 					for i in game_data['table']:
 						if i['state'] != 'discarded' and i['winning']:
 							if i['player'] == 0 or i['player'] == 2:
@@ -246,8 +248,16 @@ def page_action():
 			if game_data['betSuit'] != '':
 				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
 				if isMisere(game_data['betSuit']):
-					# we'll figure it out later :^)
-					game_data['score'][0] += 9001
+					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+						if game_data['tricks'][0] > 0:
+							game_data['score'][0] -= betValue
+						else:
+							game_data['score'][0] += betValue
+					else:
+						if game_data['tricks'][1] > 0:
+							game_data['score'][1] -= betValue
+						else:
+							game_data['score'][1] += betValue
 				else:
 					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
 						if game_data['tricks'][0] >= game_data['betAmount']:
