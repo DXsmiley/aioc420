@@ -41,10 +41,11 @@ function makeCardText(cardname) {
 	return result;
 }
 
-function makeTableTable(cards, can_discard) {
+function makeTableTable(cards, can_discard, names) {
 	var played_html = '<table>';
 	for (i in cards) {
 		var pid = cards[i].player;
+		var pname = names[pid];
 		var card = cards[i].card;
 		var cardname = card;
 		if (cards[i].state == 'discarded') {
@@ -53,7 +54,7 @@ function makeTableTable(cards, can_discard) {
 		}
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
-		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
+		played_html += pname + " (" + (pid+1) + "): " + makeCardText(cardname);
 		if (cards[i].winning) played_html += '</strong>';
 		played_html += '</td>';
 		if (pid == player_id && can_discard) {
@@ -149,8 +150,8 @@ function updateSpectatorView(data, status) {
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
-		$("#playedCards").html(makeTableTable(data.table, false));
-		$("#floorCards").html(makeTableTable(data.floor, false));
+		$("#playedCards").html(makeTableTable(data.table, false, data.names));
+		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#player1Score").text(data.tricks[0] + ' tricks');
 		$("#player2Score").text(data.tricks[1] + ' tricks');
@@ -166,10 +167,11 @@ function updateGameView(data, status) {
 		trump_suit = getTrump(data.betSuit);
 		data.table.reverse();
 		data.floor.reverse();
+		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
 		$('#kittyCards').text(data.kitty.length + ' cards');
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
-		$("#playedCards").html(makeTableTable(data.table, true));
-		$("#floorCards").html(makeTableTable(data.floor, false));
+		$("#playedCards").html(makeTableTable(data.table, true, data.names));
+		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
@@ -211,7 +213,6 @@ function postAction(action_data) {
 function changePlayer(pid) {
 	player_id = pid;
 	last_gamedata_version = -1;
-	$("#yourName").text("You are player " + (pid + 1));
 	getGameData();
 }
 
@@ -287,6 +288,15 @@ function setTrumpDisplay(displayType) {
 	show_trump = displayType;
 	last_gamedata_version = -1;
 	getGameData();
+}
+
+function changeName() {
+	var name = prompt("Please enter your name:");
+	$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
+	postAction({
+		'action': 'changeName',
+		'name': name
+	});
 }
 
 poll_timer = window.setTimeout(getGameData, 1000);

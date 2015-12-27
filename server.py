@@ -4,6 +4,8 @@ import sys
 import json
 import copy
 
+# 420 blaze it gongy is learning
+
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
 			"Queen of Clubs", "King of Clubs", "Ace of Clubs",
@@ -46,7 +48,8 @@ game_data = {
 	'version_id': 0,
 	'betPlayer': -1,
 	'betAmount': -1,
-	'betSuit': ''
+	'betSuit': '',
+	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
 do_save_data = False
@@ -287,6 +290,8 @@ def page_action():
 							game_data['score'][1] -= betValue
 						game_data['score'][0] += 10 * game_data['tricks'][0]
 				game_data['tricks'][0] = game_data['tricks'][1] = 0
+		if action == 'changeName':
+			game_data['names'][player] = bottle.request.forms.get('name')
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
