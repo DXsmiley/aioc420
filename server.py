@@ -219,7 +219,6 @@ def page_action():
 							else:
 								game_data['tricks'][1] += 1
 					game_data['floor'] = game_data['table']
-					game_data['floor'].reverse();
 					game_data['table'] = []
 					# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
