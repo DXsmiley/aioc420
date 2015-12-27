@@ -231,6 +231,10 @@ def page_action():
 		# all the relevant data has to be reset
 		if action == 'setBetAmount':
 			if len(game_data['kitty']) == 3:
+				# if a different player sets the bet, the bet should be fully reset
+				# (ie betSuit should also be reset)
+				if game_data['betPlayer'] != player:
+					game_data['betSuit'] = ''
 				game_data['betPlayer'] = player
 				betAmount = int(bottle.request.forms.get('betAmount'))
 				game_data['betAmount'] = betAmount
@@ -241,6 +245,10 @@ def page_action():
 				markWinningCard()
 		if action == 'setBetSuit':
 			if len(game_data['kitty']) == 3:
+				# if a different player sets the bet, the bet should be fully reset
+				# (ie betAmount should also be reset)
+				if game_data['betPlayer'] != player:
+					game_data['betAmount'] = -1
 				game_data['betPlayer'] = player
 				betSuit = bottle.request.forms.get('betSuit')
 				# If the bet suit/type is changing to, from or between misere bets,
