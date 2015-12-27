@@ -167,7 +167,7 @@ function updateGameView(data, status) {
 		data.table.reverse();
 		data.floor.reverse();
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		$("#myCards").html(makeHandTable(data.hands[player_id], true));
+		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
 		$("#playedCards").html(makeTableTable(data.table, true));
 		$("#floorCards").html(makeTableTable(data.floor, false));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
