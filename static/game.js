@@ -110,7 +110,7 @@ function makeHandTable(hand, buttons) {
 	return hand_html
 }
 
-function makeBetText(data) {
+function makeBetHtml(data) {
 	var names = data.names, betPlayer = data.betPlayer, betAmount = data.betAmount,
 		betSuit = data.betSuit, isFixed = data.kitty.length == 0;
 	var betInfo = 'There is no bet';
@@ -163,7 +163,7 @@ function updateSpectatorView(data, status) {
 		}
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").html(makeBetText(data));
+		$("#betInfo").html(makeBetHtml(data));
 		$("#player1Score").text(data.tricks[0] + ' tricks');
 		$("#player2Score").text(data.tricks[1] + ' tricks');
 		$("#player3Score").text(data.tricks[0] + ' tricks');
@@ -183,7 +183,7 @@ function updateGameView(data, status) {
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").html(makeBetText(data));
+		$("#betInfo").html(makeBetHtml(data));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
 		can_grab = getCanGrab(data);
