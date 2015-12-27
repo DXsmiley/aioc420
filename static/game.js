@@ -119,6 +119,10 @@ function updateSpectatorView(data, status) {
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
 		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		$("#player1Score").text(data.tricks[0] + ' tricks');
+		$("#player2Score").text(data.tricks[1] + ' tricks');
+		$("#player3Score").text(data.tricks[0] + ' tricks');
+		$("#player4Score").text(data.tricks[1] + ' tricks');
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -134,6 +138,9 @@ function updateGameView(data, status) {
 		$("#playedCards").html(makeTableTable(data.table));
 		$("#floorCards").html(makeTableTable(data.floor));
 		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		var my_score = data.tricks[player_id % 2];
+		var other_score = data.tricks[(player_id + 1) % 2];
+		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
 		last_gamedata_version = data.version_id;
 	}
 }
