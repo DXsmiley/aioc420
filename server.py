@@ -46,7 +46,8 @@ game_data = {
 	'tricks': [0, 0],
 	'version_id': 0,
 	'betAmount': -1,
-	'betSuit': ''
+	'betSuit': '',
+	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
 do_save_data = False
@@ -229,6 +230,8 @@ def page_action():
 			# Set the trump suit
 			set_trump(getTrump(betSuit))
 			markWinningCard()
+		if action == 'changeName':
+			game_data['names'][player] = bottle.request.forms.get('name')
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
