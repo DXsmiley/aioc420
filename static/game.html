@@ -26,12 +26,14 @@
 						<h3>Actions</h3>
 						<button onclick="uniAction('clear');">Clear Table</button>
 						<button onclick="actionRedeal();">Redeal</button>
-						<button onclick="uniAction('grab');">Grab Kitty</button>
+						<button onclick="actionGrab()">Grab Kitty</button>
 						<h3>Change Player</h3>
 						<button onclick="changePlayer(0);">Be player 1</button>
 						<button onclick="changePlayer(1);">Be player 2</button>
 						<button onclick="changePlayer(2);">Be player 3</button>
 						<button onclick="changePlayer(3);">Be player 4</button>
+						<br>
+						<button onclick="changeName();">Change Name</button>
 						<h3>Set Bet</h3>
 						<button onclick="setBetAmount(6);">6</button>
 						<button onclick="setBetAmount(7);">7</button>
@@ -56,13 +58,14 @@
 						<p id="kittyCards">Nothing here...</p>
 					</td>
 
-
 					<td class="layout">
 						<h2>Your Hand</h2>
 						<div id="myCards">Nothing here...</div>
 					</td>
 					
 					<td class="layout">
+						<h2>Score</h2>
+						<div id="scoreState">Nothing here...</div>
 						<h2>Tricks</h2>
 						<div id="trickState">Nothing here...</div>
 						<h2>Table</h2>
