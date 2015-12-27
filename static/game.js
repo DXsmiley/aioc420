@@ -292,28 +292,28 @@ function setTrumpDisplay(displayType) {
 	getGameData();
 }
 
+function nameIsValid(name) {
+	var allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_';
+	var valid = name.length <= 20;
+	for (i in name) {
+		if (allowed_chars.indexOf(name[i]) === -1) valid = false;
+	}
+	return valid;
+}
+
 function changeName() {
 	if (player_id != -1) {
 		var name = prompt("Please enter your name:");
-		var valid = true;
-		for (var i = 0; i < name.length; i++) {
-			var charvalid = false;
-			if (('a' <= name[i] && name[i] <= 'z') ||
-					('A' <= name[i] && name[i] <= 'Z') ||
-					('0' <= name[i] && name[i] <= '9'))
-			{
-				charvalid = true;
-			}
-			if (!charvalid) valid = false;
-		}
-		if (valid) {
-			$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
-			postAction({
+		if (name) { // checks if the user pressed cancel
+			if (nameIsValid(name)) {
+				$("#yourName").text("You are " + name + " (" + (player_id + 1) + ")");
+				postAction({
 					'action': 'changeName',
 					'name': name
-					});
-		} else {
-			window.alert("Only use letters and numbers.");
+				});
+			} else {
+				window.alert("Only use alphanumeric characters. Maximum length is 20 characters.");
+			}
 		}
 	}
 }
