@@ -68,35 +68,17 @@ function makeTableTable(cards, can_discard) {
 
 
 function makeScoreState(score) {
-	var my_score, other_score;
-	if (player_id == 0 || player_id == 2) {
-		my_score = score[0];
-		other_score = score[1];
-	} else {
-		my_score = score[1];
-		other_score = score[0];
-	}
+	var my_score = score[player_id % 2], other_score = score[(player_id + 1) % 2];
 	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 }
 
 function makeTrickState(betPlayer, betSuit, tricks) {
-		var tshtml, my_score, other_score;
-		if (player_id == 0 || player_id == 2) {
-			my_score = tricks[0];
-			other_score = tricks[1];
-		} else {
-			my_score = tricks[1];
-			other_score = tricks[0];
-		}
+		var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
 		tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
-		var canFinishRound = false
+		var canFinishRound = false;
 		if (isMisere(betSuit)) {
-			if (my_score + other_score == 10) canFinishRound = true;
-			if (betPlayer == 0 || betPlayer == 2) {
-				if (tricks[0]) canFinishRound = true;
-			} else {
-				if (tricks[1]) canFinishRound = true;
-			}
+			if (tricks[(betPlayer + 1) % 2] == 10) canFinishRound = true;
+			if (tricks[betPlayer % 2] > 0) canFinishRound = true;
 		} else {
 			if (my_score + other_score == 10) canFinishRound = true;
 		}
