@@ -5,6 +5,7 @@ var poll_timer = null;
 var show_trump = 'colour';
 var spectating = false;
 var query_timeout = 2000;
+var can_grab = false;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -129,6 +130,16 @@ function makeBetText(betPlayer, betAmount, betSuit) {
 	return betInfo;
 }
 
+function isProperBet(betAmount, betSuit) {
+	return isMisere(betSuit) || (betAmount != -1 && betSuit != '');
+}
+
+function getCanGrab(data) {
+	return data.kitty.length == 3 &&
+		isProperBet(data.betAmount, data.betSuit) &&
+		player_id == data.betPlayer;
+}
+
 function updateSpectatorView(data, status) {
 	if (data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
@@ -162,6 +173,7 @@ function updateGameView(data, status) {
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
+		can_grab = getCanGrab(data);
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -223,6 +235,15 @@ function actionRedeal() {
 	var query = window.confirm("Redeal the cards?");
 	if (query) {
 		uniAction('redeal');
+	}
+}
+
+function actionGrab() {
+	if (can_grab) {
+		var query = window.confirm("Grab the kitty? You will no longer be able to change the bet.");
+		if (query) {
+			uniAction('grab');
+		}
 	}
 }
 
