@@ -302,9 +302,7 @@ def page_action():
 				game_data['tricks'][0] = game_data['tricks'][1] = 0
 		if action == 'changeName':
 			name = bottle.request.forms.get('name')
-			print('hi')
 			if isValidName(name):
-				print('changing name to ' + name)
 				game_data['names'][player] = name
 		# Increment version counter
 		game_data['version_id'] += 1
