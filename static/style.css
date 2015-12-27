@@ -4,8 +4,13 @@ h1, h2, h3, h4, h5, h6, p, a, button, td {
 
 td.layout {
 	margin: 10px;
-	width: 30%;
+	/*width: 30%;*/
 	vertical-align: top;
+}
+
+table.layout {
+	width: 100%;
+	table-layout: fixed;
 }
 
 div.wrapper {

@@ -3,6 +3,7 @@ var player_id = -1;
 var trump_suit;
 var poll_timer = null;
 var show_trump = 'colour';
+var spectating = false;
 var query_timeout = 2000;
 
 function isMisere(betSuit) {
@@ -45,8 +46,10 @@ function makeTableTable(cards, can_discard) {
 		var pid = cards[i].player;
 		var card = cards[i].card;
 		var cardname = card;
-		if (cards[i].state == 'discarded' && (pid != player_id || !can_discard)) cardname = '(discarded)';
-		else if (cards[i].state == 'discarded') cardname += ' (discarded)';
+		if (cards[i].state == 'discarded') {
+			cardname += ' (discarded)';
+			if (pid != player_id && !spectating) cardname = '(discarded)';
+		}
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
@@ -63,66 +66,94 @@ function makeTableTable(cards, can_discard) {
 	return played_html;
 }
 
-// Update the game view with the given data.
-function updateGameView(data, status) {
-	$("p.alert").hide();
-	poll_timer = window.setTimeout(getGameData, 400);
-	if (player_id != -1 && data.version_id != last_gamedata_version) {
-		trump_suit = getTrump(data.betSuit);
-		var myhand = data.hands[player_id];
-		var table = data.table;
-		table.reverse();
-		// console.log(data.kitty, data.kitty.length);
-		$('#kittyCards').text(data.kitty.length + ' cards');
-		hand_html = '<table>';
-		for (i in myhand) {
-			hand_html += '<tr>';
-			hand_html += '<td>' + makeCardText(myhand[i]) + '</td>';
+function makeHandTable(hand, buttons) {
+	var hand_html = '<table>';
+	for (i in hand) {
+		hand_html += '<tr>';
+		hand_html += '<td>' + makeCardText(hand[i]) + '</td>';
+		if (buttons) {
 			var button_label = 'Play';
-			if (myhand.length > 10) {
+			if (hand.length > 10) {
 				button_label = 'Discard';
 			}
-			hand_html += '<td><button onclick="cardPlay(\'' + myhand[i] + '\');">' + button_label + '</button></td>';
-			hand_html += '</tr>';
-			// console.log(myhand[i], t);
+			hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">' + button_label + '</button></td>';
 		}
-		hand_html += '</table>';
-		// console.log(hand_html);
-		$("#myCards").html(hand_html);
+		hand_html += '</tr>';
+	}
+	hand_html += '</table>';
+	return hand_html
+}
+
+function makeBetText(betAmount, betSuit) {
+	var betInfo = 'There is no bet';
+	if (betAmount != -1 || betSuit != '') {
+		var betValue = 0;
+		betInfo = 'The bet is';
+		// calculate bet name
+		if (betAmount != -1) betInfo += ' ' + betAmount;
+		if (betSuit != '') betInfo += ' ' + betSuit;
+		// calculate bet value
+		if (betSuit == 'Misere') betValue = 250;
+		else if (betSuit == 'Open Misere') betValue = 500;
+		else if (betAmount != -1 && betSuit != '') {
+			betValue = 100 * (betAmount - 6);
+			if (betSuit == 'Spades') betValue += 40;
+			if (betSuit == 'Clubs') betValue += 60;
+			if (betSuit == 'Diamonds') betValue += 80;
+			if (betSuit == 'Hearts') betValue += 100;
+			if (betSuit == 'No Trump') betValue += 120;
+		}
+		// betValue == 0 means to not display it
+		if (betValue) betInfo += ' (' + betValue + ' points)';
+	}
+	return betInfo;
+}
+
+function updateSpectatorView(data, status) {
+	if (data.version_id != last_gamedata_version) {
+		trump_suit = getTrump(data.betSuit);
+		data.table.reverse();
+		data.floor.reverse();
+		for (var i = 0; i < 4; i++) {
+			var obj_id = "#player" + (i + 1) + "Cards";
+			$(obj_id).html(makeHandTable(data.hands[i]), false);
+		}
+		$("#playedCards").html(makeTableTable(data.table, false));
+		$("#floorCards").html(makeTableTable(data.floor, false));
+		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		$("#player1Score").text(data.tricks[0] + ' tricks');
+		$("#player2Score").text(data.tricks[1] + ' tricks');
+		$("#player3Score").text(data.tricks[0] + ' tricks');
+		$("#player4Score").text(data.tricks[1] + ' tricks');
+		last_gamedata_version = data.version_id;
+	}
+}
+
+// Update the game view with the given data.
+function updateGameView(data, status) {
+	if (player_id != -1 && data.version_id != last_gamedata_version) {
+		trump_suit = getTrump(data.betSuit);
+		data.table.reverse();
+		data.floor.reverse();
+		$('#kittyCards').text(data.kitty.length + ' cards');
+		$("#myCards").html(makeHandTable(data.hands[player_id], true));
 		$("#playedCards").html(makeTableTable(data.table, true));
 		$("#floorCards").html(makeTableTable(data.floor, false));
-		var my_score, other_score;
-		if (player_id == 0 || player_id == 2) {
-			my_score = data.tricks[0];
-			other_score = data.tricks[1];
-		} else {
-			my_score = data.tricks[1];
-			other_score = data.tricks[0];
-		}
+		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		var my_score = data.tricks[player_id % 2];
+		var other_score = data.tricks[(player_id + 1) % 2];
 		$("#trickState").html('<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>');
-		var betInfo = 'There is no bet';
-		if (data.betAmount != -1 || data.betSuit != '') {
-			var betValue = 0;
-			betInfo = 'The bet is';
-			// calculate bet name
-			if (data.betAmount != -1) betInfo += ' ' + data.betAmount;
-			if (data.betSuit != '') betInfo += ' ' + data.betSuit;
-			// calculate bet value
-			if (data.betSuit == 'Misere') betValue = 250;
-			else if (data.betSuit == 'Open Misere') betValue = 500;
-			else if (data.betAmount != -1 && data.betSuit != '') {
-				betValue = 100 * (data.betAmount - 6);
-				if (data.betSuit == 'Spades') betValue += 40;
-				if (data.betSuit == 'Clubs') betValue += 60;
-				if (data.betSuit == 'Diamonds') betValue += 80;
-				if (data.betSuit == 'Hearts') betValue += 100;
-				if (data.betSuit == 'No Trump') betValue += 120;
-			}
-			// betValue == 0 means to not display it
-			if (betValue) betInfo += ' (' + betValue + ' points)';
-		}
-		$("#betInfo").text(betInfo);
 		last_gamedata_version = data.version_id;
+	}
+}
+
+function updateTheView(data, status) {
+	$("p.alert").hide();
+	poll_timer = window.setTimeout(getGameData, 400);
+	if (spectating) {
+		updateSpectatorView(data, status);
+	} else {
+		updateGameView(data, status);
 	}
 }
 
@@ -141,7 +172,7 @@ function postAction(action_data) {
 		'data': action_data,
 		'dataType': 'json',
 		'timeout': query_timeout,
-		'success': updateGameView,
+		'success': updateTheView,
 		'error': handleUpdateError,
 	});
 }
@@ -203,7 +234,7 @@ function getGameData() {
 		'type': 'GET',
 		'url': '/gamestate',
 		'timeout': query_timeout,
-		'success': updateGameView,
+		'success': updateTheView,
 		'error': handleUpdateError,
 	});
 }
@@ -211,9 +242,7 @@ function getGameData() {
 function setTrumpDisplay(displayType) {
 	show_trump = displayType;
 	last_gamedata_version = -1;
-	$.get("/gamestate",
-		updateGameView
-	);
+	getGameData();
 }
 
 poll_timer = window.setTimeout(getGameData, 1000);
