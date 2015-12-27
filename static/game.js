@@ -46,8 +46,10 @@ function makeTableTable(cards, can_discard) {
 		var pid = cards[i].player;
 		var card = cards[i].card;
 		var cardname = card;
-		if (cards[i].state == 'discarded' && (pid != player_id || !can_discard)) cardname = '(discarded)';
-		else if (cards[i].state == 'discarded') cardname += ' (discarded)';
+		if (cards[i].state == 'discarded') {
+			cardname += ' (discarded)';
+			if (pid != player_id && !spectating) cardname = '(discarded)';
+		}
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
 		played_html += 'Player ' + (pid + 1) + ': ' + makeCardText(cardname);
@@ -116,8 +118,8 @@ function updateSpectatorView(data, status) {
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
-		$("#playedCards").html(makeTableTable(data.table));
-		$("#floorCards").html(makeTableTable(data.floor));
+		$("#playedCards").html(makeTableTable(data.table, false));
+		$("#floorCards").html(makeTableTable(data.floor, false));
 		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
 		$("#player1Score").text(data.tricks[0] + ' tricks');
 		$("#player2Score").text(data.tricks[1] + ' tricks');
@@ -135,8 +137,8 @@ function updateGameView(data, status) {
 		data.floor.reverse();
 		$('#kittyCards').text(data.kitty.length + ' cards');
 		$("#myCards").html(makeHandTable(data.hands[player_id], true));
-		$("#playedCards").html(makeTableTable(data.table));
-		$("#floorCards").html(makeTableTable(data.floor));
+		$("#playedCards").html(makeTableTable(data.table, true));
+		$("#floorCards").html(makeTableTable(data.floor, false));
 		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
 		var my_score = data.tricks[player_id % 2];
 		var other_score = data.tricks[(player_id + 1) % 2];
