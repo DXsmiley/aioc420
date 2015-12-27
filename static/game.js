@@ -73,17 +73,18 @@ function makeScoreState(score) {
 }
 
 function makeTrickState(betPlayer, betSuit, tricks) {
-		var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
-		tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
-		var canFinishRound = false;
-		if (isMisere(betSuit)) {
-			if (tricks[(betPlayer + 1) % 2] == 10) canFinishRound = true;
-			if (tricks[betPlayer % 2] > 0) canFinishRound = true;
-		} else {
-			if (my_score + other_score == 10) canFinishRound = true;
-		}
-		if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
-		return tshtml;
+	var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
+	tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
+	var canFinishRound = false;
+	if (isMisere(betSuit)) {
+		if (tricks[(betPlayer + 1) % 2] == 10) canFinishRound = true;
+		if (tricks[betPlayer % 2] > 0) canFinishRound = true;
+	} else {
+		if (my_score + other_score == 10) canFinishRound = true;
+	}
+	if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
+	return tshtml;
+}
 
 function makeHandTable(hand, buttons) {
 	var hand_html = '<table>';
@@ -103,11 +104,11 @@ function makeHandTable(hand, buttons) {
 	return hand_html
 }
 
-function makeBetText(betAmount, betSuit) {
+function makeBetText(betPlayer, betAmount, betSuit) {
 	var betInfo = 'There is no bet';
-	if (betAmount != -1 || betSuit != '') {
+	if (betPlayer != -1) {
 		var betValue = 0;
-		betInfo = 'The bet is';
+		betInfo = 'Player ' + (betPlayer + 1) + ' has bet';
 		// calculate bet name
 		if (betAmount != -1) betInfo += ' ' + betAmount;
 		if (betSuit != '') betInfo += ' ' + betSuit;
@@ -139,7 +140,7 @@ function updateSpectatorView(data, status) {
 		}
 		$("#playedCards").html(makeTableTable(data.table, false));
 		$("#floorCards").html(makeTableTable(data.floor, false));
-		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#player1Score").text(data.tricks[0] + ' tricks');
 		$("#player2Score").text(data.tricks[1] + ' tricks');
 		$("#player3Score").text(data.tricks[0] + ' tricks');
@@ -158,7 +159,7 @@ function updateGameView(data, status) {
 		$("#myCards").html(makeHandTable(data.hands[player_id], true));
 		$("#playedCards").html(makeTableTable(data.table, true));
 		$("#floorCards").html(makeTableTable(data.floor, false));
-		$("#betInfo").text(makeBetText(data.betAmount, data.betSuit));
+		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
 		last_gamedata_version = data.version_id;
@@ -247,7 +248,6 @@ function setBetSuit(betSuit) {
 }
 
 function finishRound() {
-	console.log("finishing round...");
 	uniAction('finishRound');
 }
 
