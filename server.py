@@ -4,6 +4,8 @@ import sys
 import json
 import copy
 
+# 420 blaze it gongy is learning
+
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
 			"Queen of Clubs", "King of Clubs", "Ace of Clubs",
