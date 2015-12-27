@@ -293,12 +293,29 @@ function setTrumpDisplay(displayType) {
 }
 
 function changeName() {
-	var name = prompt("Please enter your name:");
-	$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
-	postAction({
-		'action': 'changeName',
-		'name': name
-	});
+	if (player_id != -1) {
+		var name = prompt("Please enter your name:");
+		var valid = true;
+		for (var i = 0; i < name.length; i++) {
+			var charvalid = false;
+			if (('a' <= name[i] && name[i] <= 'z') ||
+					('A' <= name[i] && name[i] <= 'Z') ||
+					('0' <= name[i] && name[i] <= '9'))
+			{
+				charvalid = true;
+			}
+			if (!charvalid) valid = false;
+		}
+		if (valid) {
+			$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
+			postAction({
+					'action': 'changeName',
+					'name': name
+					});
+		} else {
+			window.alert("Only use letters and numbers.");
+		}
+	}
 }
 
 poll_timer = window.setTimeout(getGameData, 1000);
