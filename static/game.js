@@ -147,6 +147,8 @@ function updateSpectatorView(data, status) {
 		data.table.reverse();
 		data.floor.reverse();
 		for (var i = 0; i < 4; i++) {
+			var name_id = "#player" + (i + 1) + "Name";
+			$(name_id).html(data.names[i] + ' (' + (i + 1) + ')');
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
