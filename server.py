@@ -105,14 +105,8 @@ def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
 def isValidName(name):
-	validName = True
-	for c in name:
-		validChar = False
-		if 'a' <= c and c <= 'z': validChar = True
-		if 'A' <= c and c <= 'Z': validChar = True
-		if '0' <= c and c <= '9': validChar = True
-		if not validChar: validName = False
-	return validName
+	allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_'
+	return all(i in allowed_chars for i in name) and len(name) <= 20
 
 # Thanks, Gongy!
 def actionDeal():
