@@ -58,3 +58,6 @@ target/
 
 # vim temporary files
 *.swp
+
+# save files
+game_state.json

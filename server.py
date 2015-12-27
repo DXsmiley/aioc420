@@ -104,6 +104,16 @@ def getBetValue(betAmount, betSuit):
 def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
+def isValidName(name):
+	validName = True
+	for c in name:
+		validChar = False
+		if 'a' <= c and c <= 'z': validChar = True
+		if 'A' <= c and c <= 'Z': validChar = True
+		if '0' <= c and c <= '9': validChar = True
+		if not validChar: validName = False
+	return validName
+
 # Thanks, Gongy!
 def actionDeal():
 	print('Dealing...')
@@ -291,7 +301,11 @@ def page_action():
 						game_data['score'][0] += 10 * game_data['tricks'][0]
 				game_data['tricks'][0] = game_data['tricks'][1] = 0
 		if action == 'changeName':
-			game_data['names'][player] = bottle.request.forms.get('name')
+			name = bottle.request.forms.get('name')
+			print('hi')
+			if isValidName(name):
+				print('changing name to ' + name)
+				game_data['names'][player] = name
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
@@ -322,6 +336,7 @@ if do_save_data:
 		with open('game_state.json') as f:
 			# You can actually put anything you want in that file...
 			game_data = json.loads(f.read())
+			set_trump(getTrump(game_data['betSuit']))
 	except FileNotFoundError:
 		print('State file does not exist.')
 
