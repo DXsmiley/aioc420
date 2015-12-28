@@ -173,10 +173,13 @@ def page_action():
 					if len(game_data['hands'][player]) <= 10:
 						# in this case, play a card
 						# make sure that only one card is played per turn
+						# and make sure no one plays during kitty discarding
 						can_play = True
 						for i in game_data['table']:
-							if i['player'] == player:
+							if i['player'] == player or i['state'] == 'discarded':
 								can_play = False
+						if len(game_data['hands'][game_data['betPlayer']]) > 10:
+							can_play = False
 						if can_play:
 							game_data['table'].append({
 								'player': player,
