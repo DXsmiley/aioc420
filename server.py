@@ -49,6 +49,7 @@ game_data = {
 	'betPlayer': -1,
 	'betAmount': -1,
 	'betSuit': '',
+	'allBets': [],
 	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
@@ -123,6 +124,7 @@ def actionDeal():
 	game_data['betPlayer'] = -1
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
+	game_data['allBets'] = []
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
@@ -190,12 +192,6 @@ def page_action():
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
-		# Grab the kitty
-		if action == 'grab':
-			if isProperBet(game_data['betAmount'], game_data['betSuit']):
-				if player == game_data['betPlayer']:
-					game_data['hands'][player] += game_data['kitty']
-					game_data['kitty'] = []
 		# Clear the table
 		if action == 'clear':
 			if (game_data['table']):
@@ -230,38 +226,30 @@ def page_action():
 					break
 			game_data['hands'][player].append(card)
 			markWinningCard()			
-		# When changing between Misere/Open Misere, and any other type of bet
-		# all the relevant data has to be reset
-		if action == 'setBetAmount':
+		# Add a bet
+		if action == 'setBet':
 			if len(game_data['kitty']) == 3:
-				# if a different player sets the bet, the bet should be fully reset
-				# (ie betSuit should also be reset)
-				if game_data['betPlayer'] != player:
-					game_data['betSuit'] = ''
 				game_data['betPlayer'] = player
 				betAmount = int(bottle.request.forms.get('betAmount'))
-				game_data['betAmount'] = betAmount
-				# If the bet suit/type was a misere, then setting the bet amount
-				# should reset it
-				if isMisere(game_data['betSuit']):
-					game_data['betSuit'] = ''
-				markWinningCard()
-		if action == 'setBetSuit':
-			if len(game_data['kitty']) == 3:
-				# if a different player sets the bet, the bet should be fully reset
-				# (ie betAmount should also be reset)
-				if game_data['betPlayer'] != player:
-					game_data['betAmount'] = -1
-				game_data['betPlayer'] = player
 				betSuit = bottle.request.forms.get('betSuit')
-				# If the bet suit/type is changing to, from or between misere bets,
-				# the bet amount should be reset
-				if isMisere(game_data['betSuit']) or isMisere(betSuit):
-					game_data['betAmount'] = -1
-				game_data['betSuit'] = betSuit
-				# Set the trump suit
-				set_trump(getTrump(betSuit))
-				markWinningCard()
+				game_data['allBets'].append({
+					'betPlayer' : player,
+					'betAmount' : betAmount,
+					'betSuit' : betSuit
+				})
+				numPasses = 0
+				for i in game_data['allBets']:
+					if i['betSuit'] == 'Pass':
+						numPasses += 1
+				if numPasses == 3:
+					# bet is now confirmed
+					for i in game_data['allBets']:
+						if i['betSuit'] != 'Pass':
+							game_data['betPlayer'] = i['betPlayer']
+							game_data['betAmount'] = i['betAmount']
+							game_data['betSuit'] = i['betSuit']
+					game_data['hands'][game_data['betPlayer']] += game_data['kitty']
+					game_data['kitty'] = []
 		if action == 'finishRound':
 			if game_data['betSuit'] != '':
 				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
