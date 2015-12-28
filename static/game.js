@@ -155,10 +155,6 @@ function updateSpectatorView(data, status) {
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
-		$("#player1Tricks").text(data.tricks[0] + ' tricks');
-		$("#player2Tricks").text(data.tricks[1] + ' tricks');
-		$("#player3Tricks").text(data.tricks[0] + ' tricks');
-		$("#player4Tricks").text(data.tricks[1] + ' tricks');
 		$("#team1Score").text(data.score[0]+'');
 		$("#team2Score").text(data.score[1]+'');
 		$("#team1Tricks").text(data.tricks[0]+'');
