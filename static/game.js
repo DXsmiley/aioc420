@@ -188,11 +188,11 @@ function updateSpectatorView(data, status) {
 function updateGameView(data, status) {
 	if (player_id != -1 && data.version_id != last_gamedata_version) {
 		trump_suit = getTrump(data.betSuit);
+		var leading_suit = data.table.length == 0 ? null : getCardSuit(data.table[0]['card']);
 		data.table.reverse();
 		data.floor.reverse();
 		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		var leading_suit = data.table.length == 0 ? null : getCardSuit(data.table[0]['card']);
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0, leading_suit));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
