@@ -188,7 +188,8 @@ function updateGameView(data, status) {
 		data.floor.reverse();
 		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
+		var leading_suit = data.table.length == 0 ? null : getCardSuit(data.table[0]['card']);
+		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0, leading_suit));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
