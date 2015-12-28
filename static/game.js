@@ -79,7 +79,6 @@ function makeTableTable(cards, can_discard, names) {
 	return played_html;
 }
 
-
 function makeScoreState(score) {
 	var my_score = score[player_id % 2], other_score = score[(player_id + 1) % 2];
 	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
@@ -99,13 +98,18 @@ function makeTrickState(betPlayer, betSuit, tricks) {
 	return tshtml;
 }
 
-function makeHandTable(hand, buttons, leading_suit) {
+// Returns true if one of your cards is on the table.
+function havePlayed(table) {
+	var r = false;
+	for (i in table) if (table[i].player == player_id) r = true;
+	return r;
+}
+
+function makeHandTable(hand, buttons, leading_suit, already_played) {
 	var hand_html = '<table>';
 	var forced_to_follow = false;
 	for (i in hand) {
-		if (getCardSuit(hand[i]) == leading_suit) {
-			forced_to_follow = true;
-		}
+		if (getCardSuit(hand[i]) == leading_suit) forced_to_follow = true;
 	}
 	for (i in hand) {
 		hand_html += '<tr>';
@@ -114,7 +118,7 @@ function makeHandTable(hand, buttons, leading_suit) {
 			if (hand.length > 10) {
 				hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">Discard</button></td>';
 			} else {
-				if (!forced_to_follow || getCardSuit(hand[i]) == leading_suit) {
+				if (!already_played && (!forced_to_follow || getCardSuit(hand[i]) == leading_suit)) {
 					hand_html += '<td><button onclick="cardPlay(\'' + hand[i] + '\');">Play</button></td>';
 				} else {
 					hand_html += '<td></td>';
@@ -171,7 +175,7 @@ function updateSpectatorView(data, status) {
 			var name_id = "#player" + (i + 1) + "Name";
 			$(name_id).html(data.names[i] + ' (' + (i + 1) + ')');
 			var obj_id = "#player" + (i + 1) + "Cards";
-			$(obj_id).html(makeHandTable(data.hands[i]), false);
+			$(obj_id).html(makeHandTable(data.hands[i], false, 'none', false));
 		}
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
@@ -193,7 +197,12 @@ function updateGameView(data, status) {
 		data.floor.reverse();
 		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0, leading_suit));
+		$("#myCards").html(makeHandTable(
+			data.hands[player_id],
+			data.kitty.length == 0,
+			leading_suit,
+			havePlayed(data.table)
+		));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
