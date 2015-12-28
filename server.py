@@ -279,13 +279,19 @@ def page_action():
 				else:
 					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
 						if game_data['tricks'][0] >= game_data['betAmount']:
-							game_data['score'][0] += betValue
+							if game_data['tricks'][0] == 10: # slam
+								game_data['score'][0] += max(betValue, 250)
+							else:
+								game_data['score'][0] += betValue
 						else:
 							game_data['score'][0] -= betValue
 						game_data['score'][1] += 10 * game_data['tricks'][1]
 					else:
 						if game_data['tricks'][1] >= game_data['betAmount']:
-							game_data['score'][1] += betValue
+							if game_data['tricks'][1] == 10: # slam
+								game_data['score'][1] += max(betValue, 250)
+							else:
+								game_data['score'][1] += betValue
 						else:
 							game_data['score'][1] -= betValue
 						game_data['score'][0] += 10 * game_data['tricks'][0]
