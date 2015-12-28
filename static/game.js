@@ -7,6 +7,10 @@ var spectating = false;
 var query_timeout = 2000;
 
 function getCardSuit(cardname) {
+	if (changeName == 'Jack of Hearts' && trump_suit == 'Diamonds') return 'Diamonds';
+	if (changeName == 'Jack of Diamonds' && trump_suit == 'Hearts') return 'Hearts';
+	if (changeName == 'Jack of Clubs' && trump_suit == 'Spades') return 'Spades';
+	if (changeName == 'Jack of Spades' && trump_suit == 'Clubs') return 'Clubs';
 	if (cardname.indexOf('Diamonds') != -1) return 'Diamonds';
 	if (cardname.indexOf('Hearts') != -1) return 'Hearts';
 	if (cardname.indexOf('Spades') != -1) return 'Spades';
