@@ -109,6 +109,8 @@ def isValidName(name):
 	return all(i in allowed_chars for i in name) and len(name) <= 20
 
 def actionPlay(card, player):
+	# make sure the card is valid
+	if not card in deck_init: return
 	# prevent betting player's teammate from playing during misere-type bets
 	if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
 		if card in game_data['hands'][player]:
@@ -187,6 +189,8 @@ def actionClear():
 			# game_data['table'] = [-1] * len(game_data['table'])
 
 def actionPickup(card, player):
+	# make sure the card is valid
+	if not card in deck_init: return
 	# Remove the thing from the table and the floor.
 	for i in game_data['table']:
 		if i['card'] == card:
