@@ -108,6 +108,37 @@ def isValidName(name):
 	allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_'
 	return all(i in allowed_chars for i in name) and len(name) <= 20
 
+def actionPlay(card, player):
+	# prevent betting player's teammate from playing during misere-type bets
+	if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
+		if card in game_data['hands'][player]:
+			if len(game_data['hands'][player]) <= 10:
+				# in this case, play a card
+				# make sure that only one card is played per turn
+				# and make sure no one plays during kitty discarding
+				can_play = True
+				for i in game_data['table']:
+					if i['player'] == player or i['state'] == 'discarded':
+						can_play = False
+				if len(game_data['hands'][game_data['betPlayer']]) > 10:
+					can_play = False
+				if can_play:
+					game_data['table'].append({
+						'player': player,
+						'card': card,
+						'state': 'normal'
+						})
+					game_data['hands'][player].remove(card)
+					markWinningCard()
+			else:
+				# in this case, discard
+				game_data['hands'][player].remove(card)
+				game_data['table'].append({
+					'player': player,
+					'card': card,
+					'state': 'discarded'
+				})
+
 # Thanks, Gongy!
 def actionDeal():
 	print('Dealing...')
@@ -127,6 +158,118 @@ def actionDeal():
 	game_data['betPlayer'] = -1
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
+
+def actionGrab(player):
+	if isProperBet(game_data['betAmount'], game_data['betSuit']):
+		if player == game_data['betPlayer']:
+			game_data['hands'][player] += game_data['kitty']
+			game_data['kitty'] = []
+
+def actionClear():
+	if (game_data['table']):
+		hasDiscard = False
+		for i in game_data['table']:
+			if i['state'] == 'discarded':
+				hasDiscard = True
+		can_clear = False
+		if hasDiscard and len(game_data['table']) == 3: can_clear = True
+		if (not hasDiscard) and len(game_data['table']) == 4: can_clear = True
+		if isMisere(game_data['betSuit']) and len(game_data['table']) == 3: can_clear = True
+		if can_clear:
+			for i in game_data['table']:
+				if i['state'] != 'discarded' and i['winning']:
+					if i['player'] == 0 or i['player'] == 2:
+						game_data['tricks'][0] += 1
+					else:
+						game_data['tricks'][1] += 1
+			game_data['floor'] = game_data['table']
+			game_data['table'] = []
+			# game_data['table'] = [-1] * len(game_data['table'])
+
+def actionPickup(card, player):
+	# Remove the thing from the table and the floor.
+	for i in game_data['table']:
+		if i['card'] == card:
+			game_data['table'].remove(i)
+			break
+	for i in game_data['floor']:
+		if i['card'] == card:
+			game_data['floor'].remove(i)
+			break
+	game_data['hands'][player].append(card)
+	markWinningCard()
+
+def actionSetBetAmount(player):
+	if len(game_data['kitty']) == 3:
+		# if a different player sets the bet, the bet should be fully reset
+		# (ie betSuit should also be reset)
+		if game_data['betPlayer'] != player:
+			game_data['betSuit'] = ''
+		game_data['betPlayer'] = player
+		betAmount = int(bottle.request.forms.get('betAmount'))
+		game_data['betAmount'] = betAmount
+		# If the bet suit/type was a misere, then setting the bet amount
+		# should reset it
+		if isMisere(game_data['betSuit']):
+			game_data['betSuit'] = ''
+		markWinningCard()
+
+def actionSetBetSuit(player):
+	if len(game_data['kitty']) == 3:
+		# if a different player sets the bet, the bet should be fully reset
+		# (ie betAmount should also be reset)
+		if game_data['betPlayer'] != player:
+			game_data['betAmount'] = -1
+		game_data['betPlayer'] = player
+		betSuit = bottle.request.forms.get('betSuit')
+		# If the bet suit/type is changing to, from or between misere bets,
+		# the bet amount should be reset
+		if isMisere(game_data['betSuit']) or isMisere(betSuit):
+			game_data['betAmount'] = -1
+		game_data['betSuit'] = betSuit
+		# Set the trump suit
+		set_trump(getTrump(betSuit))
+		markWinningCard()
+
+def actionFinishRound(player):
+	if game_data['betSuit'] != '':
+		betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
+		if isMisere(game_data['betSuit']):
+			if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+				if game_data['tricks'][0] > 0:
+					game_data['score'][0] -= betValue
+				else:
+					game_data['score'][0] += betValue
+			else:
+				if game_data['tricks'][1] > 0:
+					game_data['score'][1] -= betValue
+				else:
+					game_data['score'][1] += betValue
+		else:
+			if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+				if game_data['tricks'][0] >= game_data['betAmount']:
+					if game_data['tricks'][0] == 10: # slam
+						game_data['score'][0] += max(betValue, 250)
+					else:
+						game_data['score'][0] += betValue
+				else:
+					game_data['score'][0] -= betValue
+				game_data['score'][1] += 10 * game_data['tricks'][1]
+			else:
+				if game_data['tricks'][1] >= game_data['betAmount']:
+					if game_data['tricks'][1] == 10: # slam
+						game_data['score'][1] += max(betValue, 250)
+					else:
+						game_data['score'][1] += betValue
+				else:
+					game_data['score'][1] -= betValue
+				game_data['score'][0] += 10 * game_data['tricks'][0]
+		game_data['tricks'][0] = game_data['tricks'][1] = 0
+
+def actionChangeName(player):
+	name = bottle.request.forms.get('name')
+	if isValidName(name):
+		game_data['names'][player] = name
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
@@ -166,148 +309,20 @@ def page_action():
 	# Make sure that only actual players perform actions.
 	if 0 <= player < 4:
 		# Play or discard a card
-		if action == 'play':
-			# prevent betting player's teammate from playing during misere-type bets
-			if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
-				if card in game_data['hands'][player]:
-					if len(game_data['hands'][player]) <= 10:
-						# in this case, play a card
-						# make sure that only one card is played per turn
-						# and make sure no one plays during kitty discarding
-						can_play = True
-						for i in game_data['table']:
-							if i['player'] == player or i['state'] == 'discarded':
-								can_play = False
-						if len(game_data['hands'][game_data['betPlayer']]) > 10:
-							can_play = False
-						if can_play:
-							game_data['table'].append({
-								'player': player,
-								'card': card,
-								'state': 'normal'
-								})
-							game_data['hands'][player].remove(card)
-							markWinningCard()
-					else:
-						# in this case, discard
-						game_data['hands'][player].remove(card)
-						game_data['table'].append({
-							'player': player,
-							'card': card,
-							'state': 'discarded'
-						})
+		if action == 'play': actionPlay(card, player)
 		# Completely redeal cards
-		if action == 'redeal':
-			actionDeal()
+		if action == 'redeal': actionDeal()
 		# Grab the kitty
-		if action == 'grab':
-			if isProperBet(game_data['betAmount'], game_data['betSuit']):
-				if player == game_data['betPlayer']:
-					game_data['hands'][player] += game_data['kitty']
-					game_data['kitty'] = []
+		if action == 'grab': actionGrab(player)
 		# Clear the table
-		if action == 'clear':
-			if (game_data['table']):
-				hasDiscard = False
-				for i in game_data['table']:
-					if i['state'] == 'discarded':
-						hasDiscard = True
-				can_clear = False
-				if hasDiscard and len(game_data['table']) == 3: can_clear = True
-				if (not hasDiscard) and len(game_data['table']) == 4: can_clear = True
-				if isMisere(game_data['betSuit']) and len(game_data['table']) == 3: can_clear = True
-				if can_clear:
-					for i in game_data['table']:
-						if i['state'] != 'discarded' and i['winning']:
-							if i['player'] == 0 or i['player'] == 2:
-								game_data['tricks'][0] += 1
-							else:
-								game_data['tricks'][1] += 1
-					game_data['floor'] = game_data['table']
-					game_data['table'] = []
-					# game_data['table'] = [-1] * len(game_data['table'])
-		if action == 'pickup':
-			# Remove the thing from the table and the floor.
-			for i in game_data['table']:
-				if i['card'] == card:
-					game_data['table'].remove(i)
-					break
-			for i in game_data['floor']:
-				if i['card'] == card:
-					game_data['floor'].remove(i)
-					break
-			game_data['hands'][player].append(card)
-			markWinningCard()			
+		if action == 'clear': actionClear()
+		if action == 'pickup': actionPickup(card, player)
 		# When changing between Misere/Open Misere, and any other type of bet
 		# all the relevant data has to be reset
-		if action == 'setBetAmount':
-			if len(game_data['kitty']) == 3:
-				# if a different player sets the bet, the bet should be fully reset
-				# (ie betSuit should also be reset)
-				if game_data['betPlayer'] != player:
-					game_data['betSuit'] = ''
-				game_data['betPlayer'] = player
-				betAmount = int(bottle.request.forms.get('betAmount'))
-				game_data['betAmount'] = betAmount
-				# If the bet suit/type was a misere, then setting the bet amount
-				# should reset it
-				if isMisere(game_data['betSuit']):
-					game_data['betSuit'] = ''
-				markWinningCard()
-		if action == 'setBetSuit':
-			if len(game_data['kitty']) == 3:
-				# if a different player sets the bet, the bet should be fully reset
-				# (ie betAmount should also be reset)
-				if game_data['betPlayer'] != player:
-					game_data['betAmount'] = -1
-				game_data['betPlayer'] = player
-				betSuit = bottle.request.forms.get('betSuit')
-				# If the bet suit/type is changing to, from or between misere bets,
-				# the bet amount should be reset
-				if isMisere(game_data['betSuit']) or isMisere(betSuit):
-					game_data['betAmount'] = -1
-				game_data['betSuit'] = betSuit
-				# Set the trump suit
-				set_trump(getTrump(betSuit))
-				markWinningCard()
-		if action == 'finishRound':
-			if game_data['betSuit'] != '':
-				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
-				if isMisere(game_data['betSuit']):
-					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-						if game_data['tricks'][0] > 0:
-							game_data['score'][0] -= betValue
-						else:
-							game_data['score'][0] += betValue
-					else:
-						if game_data['tricks'][1] > 0:
-							game_data['score'][1] -= betValue
-						else:
-							game_data['score'][1] += betValue
-				else:
-					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-						if game_data['tricks'][0] >= game_data['betAmount']:
-							if game_data['tricks'][0] == 10: # slam
-								game_data['score'][0] += max(betValue, 250)
-							else:
-								game_data['score'][0] += betValue
-						else:
-							game_data['score'][0] -= betValue
-						game_data['score'][1] += 10 * game_data['tricks'][1]
-					else:
-						if game_data['tricks'][1] >= game_data['betAmount']:
-							if game_data['tricks'][1] == 10: # slam
-								game_data['score'][1] += max(betValue, 250)
-							else:
-								game_data['score'][1] += betValue
-						else:
-							game_data['score'][1] -= betValue
-						game_data['score'][0] += 10 * game_data['tricks'][0]
-				game_data['tricks'][0] = game_data['tricks'][1] = 0
-		if action == 'changeName':
-			name = bottle.request.forms.get('name')
-			if isValidName(name):
-				game_data['names'][player] = name
+		if action == 'setBetAmount': actionSetBetAmount(player)
+		if action == 'setBetSuit': actionSetBetSuit(player)
+		if action == 'finishRound': actionFinishRound(player)
+		if action == 'changeName': actionChangeName(player)
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
