@@ -50,6 +50,7 @@ game_data = {
 	'betAmount': -1,
 	'betSuit': '',
 	'allBets': [],
+	'roundOver': False,
 	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
@@ -125,6 +126,7 @@ def actionDeal():
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
 	game_data['allBets'] = []
+	game_data['roundOver'] = False
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
@@ -276,7 +278,7 @@ def page_action():
 					for i in game_data['allBets']:
 						if i['betSuit'] == 'Pass':
 							numPasses += 1
-					if numPasses == 3:
+					if numPasses == 3 and len(game_data['allBets']) >= 4:
 						# bet is now confirmed
 						for i in game_data['allBets']:
 							if i['betSuit'] != 'Pass':
