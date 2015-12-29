@@ -229,27 +229,32 @@ def page_action():
 		# Add a bet
 		if action == 'setBet':
 			if len(game_data['kitty']) == 3:
-				game_data['betPlayer'] = player
-				betAmount = int(bottle.request.forms.get('betAmount'))
-				betSuit = bottle.request.forms.get('betSuit')
-				game_data['allBets'].append({
-					'betPlayer' : player,
-					'betAmount' : betAmount,
-					'betSuit' : betSuit
-				})
-				numPasses = 0
+				canBet = True
 				for i in game_data['allBets']:
-					if i['betSuit'] == 'Pass':
-						numPasses += 1
-				if numPasses == 3:
-					# bet is now confirmed
+					if i['betSuit'] == 'Pass' and i['betPlayer'] == player:
+						canBet = False
+				if canBet:
+					betAmount = int(bottle.request.forms.get('betAmount'))
+					betSuit = bottle.request.forms.get('betSuit')
+					game_data['allBets'].append({
+						'betPlayer' : player,
+						'betAmount' : betAmount,
+						'betSuit' : betSuit
+					})
+					numPasses = 0
 					for i in game_data['allBets']:
-						if i['betSuit'] != 'Pass':
-							game_data['betPlayer'] = i['betPlayer']
-							game_data['betAmount'] = i['betAmount']
-							game_data['betSuit'] = i['betSuit']
-					game_data['hands'][game_data['betPlayer']] += game_data['kitty']
-					game_data['kitty'] = []
+						if i['betSuit'] == 'Pass':
+							numPasses += 1
+					if numPasses == 3:
+						# bet is now confirmed
+						for i in game_data['allBets']:
+							if i['betSuit'] != 'Pass':
+								game_data['betPlayer'] = i['betPlayer']
+								game_data['betAmount'] = i['betAmount']
+								game_data['betSuit'] = i['betSuit']
+						# grab kitty
+						game_data['hands'][game_data['betPlayer']] += game_data['kitty']
+						game_data['kitty'] = []
 		if action == 'finishRound':
 			if game_data['betSuit'] != '':
 				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
