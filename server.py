@@ -50,7 +50,6 @@ game_data = {
 	'betAmount': -1,
 	'betSuit': '',
 	'allBets': [],
-	'roundOver': False,
 	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
@@ -126,7 +125,6 @@ def actionDeal():
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
 	game_data['allBets'] = []
-	game_data['roundOver'] = False
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
