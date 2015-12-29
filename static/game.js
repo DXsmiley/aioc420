@@ -156,18 +156,18 @@ function updateSpectatorView(data, status) {
 		data.table.reverse();
 		data.floor.reverse();
 		for (var i = 0; i < 4; i++) {
-			var name_id = "#player" + (i + 1) + "Name";
-			$(name_id).html(getDisplayName(data.names, i));
+			var name_class = ".player" + (i + 1) + "Name";
+			$(name_class).html(getDisplayName(data.names, i));
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").html(makeBetHtml(data));
-		$("#player1Score").text(data.tricks[0] + ' tricks');
-		$("#player2Score").text(data.tricks[1] + ' tricks');
-		$("#player3Score").text(data.tricks[0] + ' tricks');
-		$("#player4Score").text(data.tricks[1] + ' tricks');
+		$("#team1Score").text(data.score[0]+'');
+		$("#team2Score").text(data.score[1]+'');
+		$("#team1Tricks").text(data.tricks[0]+'');
+		$("#team2Tricks").text(data.tricks[1]+'');
 		last_gamedata_version = data.version_id;
 	}
 }
