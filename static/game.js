@@ -75,7 +75,7 @@ function makeScoreState(score) {
 	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 }
 
-function makeTrickState(betPlayer, betSuit, tricks) {
+function makeTrickState(betPlayer, betSuit, tricks, roundOver) {
 	var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
 	tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 	var canFinishRound = false;
@@ -84,8 +84,14 @@ function makeTrickState(betPlayer, betSuit, tricks) {
 		if (tricks[betPlayer % 2] > 0) canFinishRound = true;
 	} else {
 		if (my_score + other_score == 10) canFinishRound = true;
+		if (roundOver) canFinishRound = true;
 	}
-	if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
+	if (canFinishRound)
+	{
+		tshtml += '<button onclick="finishRound();">Finish Round</button>';
+		myBetAmount = -1; // reset things for next game
+		myBetSuit = '';
+	}
 	return tshtml;
 }
 
@@ -198,8 +204,6 @@ function updateGameView(data, status) {
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
-			myBetAmount = -1; // reset things for next game
-			myBetSuit = '';
 			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
 		} else { // still in betting phase
 			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
@@ -208,7 +212,7 @@ function updateGameView(data, status) {
 			$("#betInfo").html(betInfoHtml);
 		}
 		$("#scoreState").html(makeScoreState(data.score));
-		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
+		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks, data.roundOver));
 		last_gamedata_version = data.version_id;
 	}
 }
