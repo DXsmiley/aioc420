@@ -230,12 +230,43 @@ def page_action():
 		if action == 'setBet':
 			if len(game_data['kitty']) == 3:
 				canBet = True
+				# if already passed, cannot bet again
 				for i in game_data['allBets']:
 					if i['betSuit'] == 'Pass' and i['betPlayer'] == player:
 						canBet = False
+				# make sure bet is valid
+				last_bet = { # some garbage value to ensure that first bet is always valid
+					'betAmount': 5,
+					'betSuit': 'Spades'
+				}
+				for i in game_data['allBets']:
+					if i['betSuit'] != 'Pass':
+						last_bet = i
+				betAmount = int(bottle.request.forms.get('betAmount'))
+				betSuit = bottle.request.forms.get('betSuit')
+				# conditions for misere bid
+				if isMisere(betSuit) and isMisere(last_bet['betSuit']): # cannot bid misere on top of misere
+					canBet = False
+				if betSuit == 'Misere' and last_bet['betAmount'] != 7: # need 7 bid for misere
+					canBet = False
+				if betSuit == 'Open Misere':
+					if last_bet['betAmount'] < 8: # need >= 8 bid for open misere
+						canBet = False
+					if last_bet['betAmount'] == 10 and last_bet['betSuit'] == 'No Trump': # cannot bid this over 10 no trump
+						canBet = False
+				if last_bet['betSuit'] == 'Misere' and betAmount < 8: # cannot bid less than 8 on top of misere
+					canBet = False
+				if last_bet['betSuit'] == 'Open Misere' and (betAmount != 10 or betSuit != 'No Trump'): # only one way out of open misere
+					canBet = False
+				if (not isMisere(betSuit)) and (not isMisere(last_bet['betSuit'])):
+					# increasing point value
+					if getBetValue(betAmount, betSuit) <= getBetValue(last_bet['betAmount'], last_bet['betSuit']):
+						canBet = False
+				# of course, passing is always valid
+				if betSuit == 'Pass':
+					canBet = True
 				if canBet:
-					betAmount = int(bottle.request.forms.get('betAmount'))
-					betSuit = bottle.request.forms.get('betSuit')
+					# yes, it is a valid bet, so we can now process it
 					game_data['allBets'].append({
 						'betPlayer' : player,
 						'betAmount' : betAmount,
