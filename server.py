@@ -50,6 +50,7 @@ game_data = {
 	'betAmount': -1,
 	'betSuit': '',
 	'allBets': [],
+	'roundOver': False,
 	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
@@ -125,6 +126,7 @@ def actionDeal():
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
 	game_data['allBets'] = []
+	game_data['roundOver'] = False
 
 def cardGetSuit(cardname):
 	suit = 'Joker'
@@ -287,40 +289,45 @@ def page_action():
 						set_trump(game_data['betSuit'])
 						game_data['hands'][game_data['betPlayer']] += game_data['kitty']
 						game_data['kitty'] = []
+					if numPasses == 4:
+						# what a shame, everyone passed
+						game_data['roundOver'] = True
 		if action == 'finishRound':
-			if game_data['betSuit'] != '':
-				betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
-				if isMisere(game_data['betSuit']):
-					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-						if game_data['tricks'][0] > 0:
-							game_data['score'][0] -= betValue
+			betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
+			if isMisere(game_data['betSuit']):
+				if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+					if game_data['tricks'][0] > 0:
+						game_data['score'][0] -= betValue
+					else:
+						game_data['score'][0] += betValue
+				else:
+					if game_data['tricks'][1] > 0:
+						game_data['score'][1] -= betValue
+					else:
+						game_data['score'][1] += betValue
+			elif not game_data['roundOver']: # a game actually happened
+				if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
+					if game_data['tricks'][0] >= game_data['betAmount']:
+						if game_data['tricks'][0] == 10: # slam
+							game_data['score'][0] += max(betValue, 250)
 						else:
 							game_data['score'][0] += betValue
 					else:
-						if game_data['tricks'][1] > 0:
-							game_data['score'][1] -= betValue
+						game_data['score'][0] -= betValue
+					game_data['score'][1] += 10 * game_data['tricks'][1]
+				else:
+					if game_data['tricks'][1] >= game_data['betAmount']:
+						if game_data['tricks'][1] == 10: # slam
+							game_data['score'][1] += max(betValue, 250)
 						else:
 							game_data['score'][1] += betValue
-				else:
-					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-						if game_data['tricks'][0] >= game_data['betAmount']:
-							if game_data['tricks'][0] == 10: # slam
-								game_data['score'][0] += max(betValue, 250)
-							else:
-								game_data['score'][0] += betValue
-						else:
-							game_data['score'][0] -= betValue
-						game_data['score'][1] += 10 * game_data['tricks'][1]
 					else:
-						if game_data['tricks'][1] >= game_data['betAmount']:
-							if game_data['tricks'][1] == 10: # slam
-								game_data['score'][1] += max(betValue, 250)
-							else:
-								game_data['score'][1] += betValue
-						else:
-							game_data['score'][1] -= betValue
-						game_data['score'][0] += 10 * game_data['tricks'][0]
-				game_data['tricks'][0] = game_data['tricks'][1] = 0
+						game_data['score'][1] -= betValue
+					game_data['score'][0] += 10 * game_data['tricks'][0]
+			game_data['tricks'][0] = game_data['tricks'][1] = 0
+			for i in range(4):
+				game_data['hands'][i] = []
+			game_data['kitty'] = []
 		if action == 'changeName':
 			game_data['names'][player] = bottle.request.forms.get('name')
 		# Increment version counter
