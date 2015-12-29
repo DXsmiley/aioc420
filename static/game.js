@@ -278,31 +278,38 @@ function uniAction(action_name) {
 }
 
 function setBetAmount(betAmount) {
-//	window.clearTimeout(poll_timer);
-	last_gamedata_version = -1;
-	myBetAmount = betAmount;
-	if (isMisere(myBetSuit) || myBetSuit == 'Pass')
-		myBetSuit = '';
+	if (player_id != -1)
+	{
+		last_gamedata_version = -1;
+		myBetAmount = betAmount;
+		if (isMisere(myBetSuit) || myBetSuit == 'Pass')
+			myBetSuit = '';
+	}
 }
 
 function setBetSuit(betSuit) {
-//	window.clearTimeout(poll_timer);
-	last_gamedata_version = -1;
-	myBetSuit = betSuit;
-	if (isMisere(betSuit) || betSuit == 'Pass')
-		myBetAmount = -1;
+	if (player_id != -1)
+	{
+		last_gamedata_version = -1;
+		myBetSuit = betSuit;
+		if (isMisere(betSuit) || betSuit == 'Pass')
+			myBetAmount = -1;
+	}
 }
 
 function confirmBet() {
 	window.clearTimeout(poll_timer);
-	last_gamedata_version = -1;
-	if (isProperBet(myBetAmount, myBetSuit))
+	if (player_id != -1)
 	{
-		postAction({
-			'action': 'setBet',
-			'betAmount': myBetAmount,
-			'betSuit': myBetSuit
-		});
+		last_gamedata_version = -1;
+		if (isProperBet(myBetAmount, myBetSuit))
+		{
+			postAction({
+				'action': 'setBet',
+				'betAmount': myBetAmount,
+				'betSuit': myBetSuit
+			});
+		}
 	}
 }
 
