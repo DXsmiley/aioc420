@@ -230,10 +230,6 @@ def page_action():
 		if action == 'setBet':
 			if len(game_data['kitty']) == 3:
 				canBet = True
-				# if already passed, cannot bet again
-				for i in game_data['allBets']:
-					if i['betSuit'] == 'Pass' and i['betPlayer'] == player:
-						canBet = False
 				# make sure bet is valid
 				last_bet = { # some garbage value to ensure that first bet is always valid
 					'betAmount': 5,
@@ -265,6 +261,10 @@ def page_action():
 				# of course, passing is always valid
 				if betSuit == 'Pass':
 					canBet = True
+				# but you cannot pass multiple times
+				for i in game_data['allBets']:
+					if i['betSuit'] == 'Pass' and i['betPlayer'] == player:
+						canBet = False
 				if canBet:
 					# yes, it is a valid bet, so we can now process it
 					game_data['allBets'].append({
