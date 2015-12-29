@@ -141,6 +141,16 @@ function makeBetText(betPlayer, betAmount, betSuit) {
 	return '';
 }
 
+function makeBetTable(all_bets) {
+	var betInfo = "";
+	for (i in all_bets) {
+		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit);
+		betInfo = "<tr><td>" + thisBet + "</td></tr>" + betInfo;
+	}
+	betInfo = "<table>" + betInfo + "</table>";
+	return betInfo;
+}
+
 function isProperBet(betAmount, betSuit) {
 	return isMisere(betSuit) || (betAmount != -1 && betSuit != '') || (betSuit == 'Pass');
 }
@@ -156,7 +166,10 @@ function updateSpectatorView(data, status) {
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
-		$("#playedCards").html(makeTableTable(data.table, false, data.names));
+		if (data.kitty.length == 0)
+			$("#playedCards").html(makeTableTable(data.table, false, data.names));
+		else
+			$("#playedCards").html(makeBetTable(data.allBets));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
 		$("#team1Score").text(data.score[0]+'');
@@ -178,16 +191,8 @@ function updateGameView(data, status) {
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
 		if (data.kitty.length == 0) // bet exists so in play mode
 			$("#playedCards").html(makeTableTable(data.table, true, data.names));
-		else
-		{ // in betting phase, display bets on table
-			var allBets = "";
-			for (i in data.allBets) {
-				var thisBet = makeBetText(data.allBets[i].betPlayer, data.allBets[i].betAmount, data.allBets[i].betSuit);
-				allBets = "<tr><td>" + thisBet + "</td></tr>" + allBets;
-			}
-			allBets = "<table>" + allBets + "</table>";
-			$("#playedCards").html(allBets);
-		}
+		else // in betting phase, display bets on table
+			$("#playedCards").html(makeBetTable(data.allBets));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
 			myBetAmount = -1; // reset things for next game
