@@ -284,6 +284,7 @@ def page_action():
 								game_data['betAmount'] = i['betAmount']
 								game_data['betSuit'] = i['betSuit']
 						# grab kitty
+						set_trump(game_data['betSuit'])
 						game_data['hands'][game_data['betPlayer']] += game_data['kitty']
 						game_data['kitty'] = []
 		if action == 'finishRound':
