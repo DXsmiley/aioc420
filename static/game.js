@@ -129,22 +129,22 @@ function makeBetTextNoPlayer(betAmount, betSuit) {
 	return betInfo;
 }
 
-function makeBetText(betPlayer, betAmount, betSuit) {
+function makeBetText(betPlayer, betAmount, betSuit, betPlayerName) {
 	if (betPlayer != -1)
 	{
 		var betInfo = 'There is no bet.';
 		var alternative = makeBetTextNoPlayer(betAmount, betSuit);
 		if (alternative != '')
-			betInfo = 'Player ' + (betPlayer+1) + ' has bet' + alternative;
+			betInfo = betPlayerName + ' (' + (betPlayer+1) + ') has bet' + alternative;
 		return betInfo;
 	}
 	return '';
 }
 
-function makeBetTable(all_bets) {
+function makeBetTable(all_bets, names) {
 	var betInfo = "";
 	for (i in all_bets) {
-		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit);
+		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names[all_bets[i].betPlayer]);
 		betInfo = "<tr><td>" + thisBet + "</td></tr>" + betInfo;
 	}
 	betInfo = "<table>" + betInfo + "</table>";
@@ -169,9 +169,12 @@ function updateSpectatorView(data, status) {
 		if (data.kitty.length == 0)
 			$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		else
-			$("#playedCards").html(makeBetTable(data.allBets));
+			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
+		if (data.betPlayer == -1)
+			$("#betInfo").text('There is no bet.');
+		else
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
 		$("#team1Score").text(data.score[0]+'');
 		$("#team2Score").text(data.score[1]+'');
 		$("#team1Tricks").text(data.tricks[0]+'');
@@ -192,12 +195,12 @@ function updateGameView(data, status) {
 		if (data.kitty.length == 0) // bet exists so in play mode
 			$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		else // in betting phase, display bets on table
-			$("#playedCards").html(makeBetTable(data.allBets));
+			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
 			myBetAmount = -1; // reset things for next game
 			myBetSuit = '';
-			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
 		} else { // still in betting phase
 			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
 			if (isProperBet(myBetAmount, myBetSuit))
