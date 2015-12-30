@@ -130,22 +130,15 @@ function makeBetTextNoPlayer(betAmount, betSuit) {
 	return betInfo;
 }
 
-function makeBetText(betPlayer, betAmount, betSuit, betPlayerName) {
-	if (betPlayer != -1)
-	{
-		var betInfo = 'There is no bet.';
-		var alternative = makeBetTextNoPlayer(betAmount, betSuit);
-		if (alternative != '')
-			betInfo = betPlayerName + ' (' + (betPlayer+1) + ') has bet' + alternative;
-		return betInfo;
-	}
-	return '';
+function makeBetText(betPlayer, betAmount, betSuit, names) {
+	if (betPlayer == -1) return 'There is no bet.';
+	else return getDisplayName(names, betPlayer) + ' has bet' + makeBetTextNoPlayer(betAmount, betSuit);
 }
 
 function makeBetTable(all_bets, names) {
 	var betInfo = "";
 	for (i in all_bets) {
-		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names[all_bets[i].betPlayer]);
+		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names);
 		betInfo = "<tr><td>" + thisBet + "</td></tr>" + betInfo;
 	}
 	betInfo = "<table>" + betInfo + "</table>";
@@ -172,10 +165,7 @@ function updateSpectatorView(data, status) {
 		else
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		if (data.betPlayer == -1)
-			$("#betInfo").text('There is no bet.');
-		else
-			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
+		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
 		$("#team1Score").text(data.score[0]+'');
 		$("#team2Score").text(data.score[1]+'');
 		$("#team1Tricks").text(data.tricks[0]+'');
@@ -199,7 +189,7 @@ function updateGameView(data, status) {
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
-			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
 		} else { // still in betting phase
 			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
 			if (isProperBet(myBetAmount, myBetSuit))
