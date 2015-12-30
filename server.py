@@ -295,6 +295,10 @@ def actionFinishRound(player):
 				game_data['score'][oppTeam] += 10 * oppTricks
 		actionDeal()
 
+def actionNewGame():
+	actionDeal()
+	game_data['score'] = [0, 0]
+
 def actionChangeName(player):
 	name = bottle.request.forms.get('name')
 	if isValidName(name):
@@ -339,14 +343,17 @@ def page_action():
 	if 0 <= player < 4:
 		# Play or discard a card
 		if action == 'play': actionPlay(card, player)
-		# Completely redeal cards
-		if action == 'redeal': actionDeal()
+		# Start a fresh new game
+		if action == 'newgame': actionNewGame()
 		# Clear the table
 		if action == 'clear': actionClear()
+		# Pick up a card
 		if action == 'pickup': actionPickup(card, player)
 		# Add a bet
 		if action == 'setBet': actionSetBet(player)
+		# Finish a round
 		if action == 'finishRound': actionFinishRound(player)
+		# Change a name
 		if action == 'changeName': actionChangeName(player)
 		# Increment version counter
 		game_data['version_id'] += 1
