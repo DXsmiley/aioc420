@@ -277,7 +277,10 @@ function setBetSuit(betSuit) {
 }
 
 function finishRound() {
-	uniAction('finishRound');
+	var query = window.confirm("Finish the round? This will redeal the cards.");
+	if (query) {
+		uniAction('finishRound');
+	}
 }
 
 function getGameData() {

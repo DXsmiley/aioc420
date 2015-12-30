@@ -104,6 +104,13 @@ def getBetValue(betAmount, betSuit):
 def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
+def roundFinished():
+	betTeam = game_data['betPlayer'] % 2
+	if len(game_data['kitty']) == 0:
+		if game_data['tricks'][0] + game_data['tricks'][1] == 10: return True
+		if isMisere(game_data['betSuit']) and game_data['tricks'][betTeam] > 0: return True
+	return False
+
 def isValidName(name):
 	allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_'
 	return all(i in allowed_chars for i in name) and len(name) <= 20
@@ -113,6 +120,8 @@ def actionPlay(card, player):
 	if not card in deck_init: return
 	# prevent playing before kitty grab
 	if len(game_data['kitty']) == 3: return
+	# prevent playing after the round is finished
+	if roundFinished(): return
 	# prevent betting player's teammate from playing during misere-type bets
 	if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
 		if card in game_data['hands'][player]:
@@ -236,16 +245,11 @@ def actionSetBetSuit(player):
 	markWinningCard()
 
 def actionFinishRound(player):
-	betTeam = game_data['betPlayer'] % 2
-	oppTeam = 1 - betTeam
-	betTricks = game_data['tricks'][betTeam]
-	oppTricks = game_data['tricks'][oppTeam]
-	# check that the round can be finished
-	canFinishRound = False
-	if len(game_data['kitty']) == 0:
-		if betTricks + oppTricks == 10: canFinishRound = True
-		if isMisere(game_data['betSuit']) and betTricks > 0: canFinishRound = True
-	if canFinishRound:
+	if roundFinished():
+		betTeam = game_data['betPlayer'] % 2
+		oppTeam = 1 - betTeam
+		betTricks = game_data['tricks'][betTeam]
+		oppTricks = game_data['tricks'][oppTeam]
 		betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
 		if isMisere(game_data['betSuit']):
 			if betTricks > 0: game_data['score'][betTeam] -= betValue
@@ -257,7 +261,7 @@ def actionFinishRound(player):
 			else:
 				game_data['score'][betTeam] -= betValue
 			game_data['score'][oppTeam] += 10 * oppTricks
-		game_data['tricks'][0] = game_data['tricks'][1] = 0
+		actionDeal()
 
 def actionChangeName(player):
 	name = bottle.request.forms.get('name')
