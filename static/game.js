@@ -256,10 +256,10 @@ function cardPickup(card) {
 	});
 }
 
-function actionRedeal() {
-	var query = window.confirm("Redeal the cards?");
+function actionNewGame() {
+	var query = window.confirm("Start a new game?\nThis will reset all scores.");
 	if (query) {
-		uniAction('redeal');
+		uniAction('newgame');
 	}
 }
 
