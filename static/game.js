@@ -82,12 +82,8 @@ function makeTrickState(betPlayer, betSuit, tricks) {
 	var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
 	tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 	var canFinishRound = false;
-	if (isMisere(betSuit)) {
-		if (tricks[(betPlayer + 1) % 2] == 10) canFinishRound = true;
-		if (tricks[betPlayer % 2] > 0) canFinishRound = true;
-	} else {
-		if (my_score + other_score == 10) canFinishRound = true;
-	}
+	if (my_score + other_score == 10) canFinishRound = true;
+	if (isMisere(betSuit) && tricks[betPlayer % 2] > 0) canFinishRound = true;
 	if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
 	return tshtml;
 }

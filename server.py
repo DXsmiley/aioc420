@@ -236,7 +236,15 @@ def actionSetBetSuit(player):
 	markWinningCard()
 
 def actionFinishRound(player):
-	if game_data['betSuit'] != '':
+	# check that the round can be finished
+	canFinishRound = False
+	if len(game_data['kitty']) == 0:
+		betTeam = game_data['betPlayer'] % 2
+		betTricks = game_data['tricks'][betTeam]
+		oppTricks = game_data['tricks'][1 - betTeam]
+		if betTricks + oppTricks == 10: canFinishRound = True
+		if isMisere(game_data['betSuit']) and betTricks > 0: canFinishRound = True
+	if canFinishRound:
 		betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
 		if isMisere(game_data['betSuit']):
 			if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
