@@ -190,6 +190,8 @@ function updateGameView(data, status) {
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
 			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
+			myBetAmount = -1; // reset things
+			myBetSuit = '';
 		} else { // still in betting phase
 			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
 			if (isProperBet(myBetAmount, myBetSuit))
