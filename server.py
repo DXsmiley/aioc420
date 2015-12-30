@@ -191,16 +191,12 @@ def actionClear():
 def actionPickup(card, player):
 	# make sure the card is valid
 	if not card in deck_init: return
-	# Remove the thing from the table and the floor.
+	# Remove the thing from the table.
 	for i in game_data['table']:
-		if i['card'] == card:
+		if i['card'] == card and i['player'] == player:
 			game_data['table'].remove(i)
+			game_data['hands'][player].append(card)
 			break
-	for i in game_data['floor']:
-		if i['card'] == card:
-			game_data['floor'].remove(i)
-			break
-	game_data['hands'][player].append(card)
 	markWinningCard()
 
 def actionSetBetAmount(player):
