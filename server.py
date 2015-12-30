@@ -236,46 +236,27 @@ def actionSetBetSuit(player):
 	markWinningCard()
 
 def actionFinishRound(player):
+	betTeam = game_data['betPlayer'] % 2
+	oppTeam = 1 - betTeam
+	betTricks = game_data['tricks'][betTeam]
+	oppTricks = game_data['tricks'][oppTeam]
 	# check that the round can be finished
 	canFinishRound = False
 	if len(game_data['kitty']) == 0:
-		betTeam = game_data['betPlayer'] % 2
-		betTricks = game_data['tricks'][betTeam]
-		oppTricks = game_data['tricks'][1 - betTeam]
 		if betTricks + oppTricks == 10: canFinishRound = True
 		if isMisere(game_data['betSuit']) and betTricks > 0: canFinishRound = True
 	if canFinishRound:
 		betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
 		if isMisere(game_data['betSuit']):
-			if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-				if game_data['tricks'][0] > 0:
-					game_data['score'][0] -= betValue
-				else:
-					game_data['score'][0] += betValue
-			else:
-				if game_data['tricks'][1] > 0:
-					game_data['score'][1] -= betValue
-				else:
-					game_data['score'][1] += betValue
+			if betTricks > 0: game_data['score'][betTeam] -= betValue
+			else: game_data['score'][betTeam] += betValue
 		else:
-			if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
-				if game_data['tricks'][0] >= game_data['betAmount']:
-					if game_data['tricks'][0] == 10: # slam
-						game_data['score'][0] += max(betValue, 250)
-					else:
-						game_data['score'][0] += betValue
-				else:
-					game_data['score'][0] -= betValue
-				game_data['score'][1] += 10 * game_data['tricks'][1]
+			if betTricks >= game_data['betAmount']:
+				if betTricks == 10 and 250 > betValue: betValue = 250
+				game_data['score'][betTeam] += betValue
 			else:
-				if game_data['tricks'][1] >= game_data['betAmount']:
-					if game_data['tricks'][1] == 10: # slam
-						game_data['score'][1] += max(betValue, 250)
-					else:
-						game_data['score'][1] += betValue
-				else:
-					game_data['score'][1] -= betValue
-				game_data['score'][0] += 10 * game_data['tricks'][0]
+				game_data['score'][betTeam] -= betValue
+			game_data['score'][oppTeam] += 10 * oppTricks
 		game_data['tricks'][0] = game_data['tricks'][1] = 0
 
 def actionChangeName(player):
