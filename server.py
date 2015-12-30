@@ -111,6 +111,8 @@ def isValidName(name):
 def actionPlay(card, player):
 	# make sure the card is valid
 	if not card in deck_init: return
+	# prevent playing before kitty grab
+	if len(game_data['kitty']) == 3: return
 	# prevent betting player's teammate from playing during misere-type bets
 	if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
 		if card in game_data['hands'][player]:
@@ -200,36 +202,38 @@ def actionPickup(card, player):
 	markWinningCard()
 
 def actionSetBetAmount(player):
-	if len(game_data['kitty']) == 3:
-		# if a different player sets the bet, the bet should be fully reset
-		# (ie betSuit should also be reset)
-		if game_data['betPlayer'] != player:
-			game_data['betSuit'] = ''
-		game_data['betPlayer'] = player
-		betAmount = int(bottle.request.forms.get('betAmount'))
-		game_data['betAmount'] = betAmount
-		# If the bet suit/type was a misere, then setting the bet amount
-		# should reset it
-		if isMisere(game_data['betSuit']):
-			game_data['betSuit'] = ''
-		markWinningCard()
+	# prevent changing the bet after the kitty is grabbed
+	if len(game_data['kitty']) == 0: return
+	# if a different player sets the bet, the bet should be fully reset
+	# (ie betSuit should also be reset)
+	if game_data['betPlayer'] != player:
+		game_data['betSuit'] = ''
+	game_data['betPlayer'] = player
+	betAmount = int(bottle.request.forms.get('betAmount'))
+	game_data['betAmount'] = betAmount
+	# If the bet suit/type was a misere, then setting the bet amount
+	# should reset it
+	if isMisere(game_data['betSuit']):
+		game_data['betSuit'] = ''
+	markWinningCard()
 
 def actionSetBetSuit(player):
-	if len(game_data['kitty']) == 3:
-		# if a different player sets the bet, the bet should be fully reset
-		# (ie betAmount should also be reset)
-		if game_data['betPlayer'] != player:
-			game_data['betAmount'] = -1
-		game_data['betPlayer'] = player
-		betSuit = bottle.request.forms.get('betSuit')
-		# If the bet suit/type is changing to, from or between misere bets,
-		# the bet amount should be reset
-		if isMisere(game_data['betSuit']) or isMisere(betSuit):
-			game_data['betAmount'] = -1
-		game_data['betSuit'] = betSuit
-		# Set the trump suit
-		set_trump(getTrump(betSuit))
-		markWinningCard()
+	# prevent changing the bet after the kitty is grabbed
+	if len(game_data['kitty']) == 0: return
+	# if a different player sets the bet, the bet should be fully reset
+	# (ie betAmount should also be reset)
+	if game_data['betPlayer'] != player:
+		game_data['betAmount'] = -1
+	game_data['betPlayer'] = player
+	betSuit = bottle.request.forms.get('betSuit')
+	# If the bet suit/type is changing to, from or between misere bets,
+	# the bet amount should be reset
+	if isMisere(game_data['betSuit']) or isMisere(betSuit):
+		game_data['betAmount'] = -1
+	game_data['betSuit'] = betSuit
+	# Set the trump suit
+	set_trump(getTrump(betSuit))
+	markWinningCard()
 
 def actionFinishRound(player):
 	if game_data['betSuit'] != '':
