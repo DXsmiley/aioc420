@@ -17,6 +17,11 @@ function getTrump(betSuit) {
 	else return betSuit;
 }
 
+function getDisplayName(names, i) {
+	if (0 <= i && i < 4) return names[i] + ' (' + (i+1) + ')';
+	else return 'Invalid Player (tell someone to fix this ~_~) (' + (i+1) + ')';
+}
+
 function makeCardText(cardname) {
 	var result = cardname;
 	var is_trump = false;
@@ -46,7 +51,6 @@ function makeTableTable(cards, can_discard, names) {
 	var played_html = '<table>';
 	for (i in cards) {
 		var pid = cards[i].player;
-		var pname = names[pid];
 		var card = cards[i].card;
 		var cardname = card;
 		if (cards[i].state == 'discarded') {
@@ -55,7 +59,7 @@ function makeTableTable(cards, can_discard, names) {
 		}
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
-		played_html += pname + " (" + (pid+1) + "): " + makeCardText(cardname);
+		played_html += getDisplayName(names, pid) + ": " + makeCardText(cardname);
 		if (cards[i].winning) played_html += '</strong>';
 		played_html += '</td>';
 		if (pid == player_id && can_discard) {
@@ -78,20 +82,11 @@ function makeScoreState(score) {
 function makeTrickState(betPlayer, betSuit, tricks, roundOver) {
 	var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
 	tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
-	var canFinishRound = false;
-	if (isMisere(betSuit)) {
-		if (tricks[(betPlayer + 1) % 2] == 10) canFinishRound = true;
-		if (tricks[betPlayer % 2] > 0) canFinishRound = true;
-	} else {
-		if (my_score + other_score == 10) canFinishRound = true;
-		if (roundOver) canFinishRound = true;
-	}
-	if (canFinishRound)
-	{
-		tshtml += '<button onclick="finishRound();">Finish Round</button>';
-		myBetAmount = -1; // reset things for next game
-		myBetSuit = '';
-	}
+	var roundFinished = false;
+	if (my_score + other_score == 10) roundFinished = true;
+	if (isMisere(betSuit) && tricks[betPlayer % 2] > 0) roundFinished = true;
+	if (roundOver) roundFinished = true;
+	if (roundFinished) tshtml += '<button onclick="finishRound();">Finish Round</button>';
 	return tshtml;
 }
 
@@ -135,22 +130,15 @@ function makeBetTextNoPlayer(betAmount, betSuit) {
 	return betInfo;
 }
 
-function makeBetText(betPlayer, betAmount, betSuit, betPlayerName) {
-	if (betPlayer != -1)
-	{
-		var betInfo = 'There is no bet.';
-		var alternative = makeBetTextNoPlayer(betAmount, betSuit);
-		if (alternative != '')
-			betInfo = betPlayerName + ' (' + (betPlayer+1) + ') has bet' + alternative;
-		return betInfo;
-	}
-	return '';
+function makeBetText(betPlayer, betAmount, betSuit, names) {
+	if (betPlayer == -1) return 'There is no bet.';
+	else return getDisplayName(names, betPlayer) + ' has bet' + makeBetTextNoPlayer(betAmount, betSuit);
 }
 
 function makeBetTable(all_bets, names) {
 	var betInfo = "";
 	for (i in all_bets) {
-		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names[all_bets[i].betPlayer]);
+		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names);
 		betInfo = "<tr><td>" + thisBet + "</td></tr>" + betInfo;
 	}
 	betInfo = "<table>" + betInfo + "</table>";
@@ -168,7 +156,7 @@ function updateSpectatorView(data, status) {
 		data.floor.reverse();
 		for (var i = 0; i < 4; i++) {
 			var name_class = ".player" + (i + 1) + "Name";
-			$(name_class).html(data.names[i] + ' (' + (i + 1) + ')');
+			$(name_class).html(getDisplayName(data.names, i));
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
@@ -177,10 +165,7 @@ function updateSpectatorView(data, status) {
 		else
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		if (data.betPlayer == -1)
-			$("#betInfo").text('There is no bet.');
-		else
-			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
+		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
 		$("#team1Score").text(data.score[0]+'');
 		$("#team2Score").text(data.score[1]+'');
 		$("#team1Tricks").text(data.tricks[0]+'');
@@ -195,7 +180,7 @@ function updateGameView(data, status) {
 		trump_suit = getTrump(data.betSuit);
 		data.table.reverse();
 		data.floor.reverse();
-		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
+		$("#yourName").text("You are " + getDisplayName(data.names, player_id));
 		$('#kittyCards').text(data.kitty.length + ' cards');
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
 		if (data.kitty.length == 0) // bet exists so in play mode
@@ -204,7 +189,7 @@ function updateGameView(data, status) {
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
 		if (data.kitty.length == 0) { // bet exists and is confirmed
-			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
 		} else { // still in betting phase
 			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
 			if (isProperBet(myBetAmount, myBetSuit))
@@ -318,7 +303,10 @@ function confirmBet() {
 }
 
 function finishRound() {
-	uniAction('finishRound');
+	var query = window.confirm("Finish the round? This will redeal the cards.");
+	if (query) {
+		uniAction('finishRound');
+	}
 }
 
 function getGameData() {
@@ -338,13 +326,30 @@ function setTrumpDisplay(displayType) {
 	getGameData();
 }
 
+function nameIsValid(name) {
+	var allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_';
+	var valid = name.length <= 20;
+	for (i in name) {
+		if (allowed_chars.indexOf(name[i]) === -1) valid = false;
+	}
+	return valid;
+}
+
 function changeName() {
-	var name = prompt("Please enter your name:");
-	$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
-	postAction({
-		'action': 'changeName',
-		'name': name
-	});
+	if (player_id != -1) {
+		var name = prompt("Please enter your name:");
+		if (name) { // checks if the user pressed cancel
+			if (nameIsValid(name)) {
+				$("#yourName").text("You are " + name + " (" + (player_id + 1) + ")");
+				postAction({
+					'action': 'changeName',
+					'name': name
+				});
+			} else {
+				window.alert("Only use alphanumeric characters. Maximum length is 20 characters.");
+			}
+		}
+	}
 }
 
 poll_timer = window.setTimeout(getGameData, 1000);
