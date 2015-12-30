@@ -49,6 +49,8 @@ game_data = {
 	'betPlayer': -1,
 	'betAmount': -1,
 	'betSuit': '',
+	'allBets': [],
+	'roundOver': False,
 	'names': ['Player', 'Player', 'Player', 'Player']
 }
 
@@ -105,6 +107,7 @@ def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
 def roundFinished():
+	if game_data['roundOver']: return True
 	betTeam = game_data['betPlayer'] % 2
 	if len(game_data['kitty']) == 0:
 		if game_data['tricks'][0] + game_data['tricks'][1] == 10: return True
@@ -171,12 +174,8 @@ def actionDeal():
 	game_data['betPlayer'] = -1
 	game_data['betAmount'] = -1
 	game_data['betSuit'] = ''
-
-def actionGrab(player):
-	if isProperBet(game_data['betAmount'], game_data['betSuit']):
-		if player == game_data['betPlayer']:
-			game_data['hands'][player] += game_data['kitty']
-			game_data['kitty'] = []
+	game_data['allBets'] = []
+	game_data['roundOver'] = False
 
 def actionClear():
 	if (game_data['table']):
@@ -210,57 +209,90 @@ def actionPickup(card, player):
 			break
 	markWinningCard()
 
-def actionSetBetAmount(player):
+def actionSetBet(player):
 	# prevent changing the bet after the kitty is grabbed
 	if len(game_data['kitty']) == 0: return
-	# if a different player sets the bet, the bet should be fully reset
-	# (ie betSuit should also be reset)
-	if game_data['betPlayer'] != player:
-		game_data['betSuit'] = ''
-	game_data['betPlayer'] = player
+	canBet = True
+	# make sure bet is valid
+	last_bet = { # some garbage value to ensure that first bet is always valid
+		'betAmount': 5,
+		'betSuit': 'Spades'
+	}
+	for i in game_data['allBets']:
+		if i['betSuit'] != 'Pass':
+			last_bet = i
 	betAmount = int(bottle.request.forms.get('betAmount'))
-	game_data['betAmount'] = betAmount
-	# If the bet suit/type was a misere, then setting the bet amount
-	# should reset it
-	if isMisere(game_data['betSuit']):
-		game_data['betSuit'] = ''
-	markWinningCard()
-
-def actionSetBetSuit(player):
-	# prevent changing the bet after the kitty is grabbed
-	if len(game_data['kitty']) == 0: return
-	# if a different player sets the bet, the bet should be fully reset
-	# (ie betAmount should also be reset)
-	if game_data['betPlayer'] != player:
-		game_data['betAmount'] = -1
-	game_data['betPlayer'] = player
 	betSuit = bottle.request.forms.get('betSuit')
-	# If the bet suit/type is changing to, from or between misere bets,
-	# the bet amount should be reset
-	if isMisere(game_data['betSuit']) or isMisere(betSuit):
-		game_data['betAmount'] = -1
-	game_data['betSuit'] = betSuit
-	# Set the trump suit
-	set_trump(getTrump(betSuit))
-	markWinningCard()
+	# conditions for misere bid
+	if isMisere(betSuit) and isMisere(last_bet['betSuit']): # cannot bid misere on top of misere
+		canBet = False
+	if betSuit == 'Misere' and last_bet['betAmount'] != 7: # need 7 bid for misere
+		canBet = False
+	if betSuit == 'Open Misere':
+		if last_bet['betAmount'] < 8: # need >= 8 bid for open misere
+			canBet = False
+		if last_bet['betAmount'] == 10 and last_bet['betSuit'] == 'No Trump': # cannot bid this over 10 no trump
+			canBet = False
+	if last_bet['betSuit'] == 'Misere' and betAmount < 8: # cannot bid less than 8 on top of misere
+		canBet = False
+	if last_bet['betSuit'] == 'Open Misere' and (betAmount != 10 or betSuit != 'No Trump'): # only one way out of open misere
+		canBet = False
+	if (not isMisere(betSuit)) and (not isMisere(last_bet['betSuit'])):
+		# increasing point value
+		if getBetValue(betAmount, betSuit) <= getBetValue(last_bet['betAmount'], last_bet['betSuit']):
+			canBet = False
+	# of course, passing is always valid
+	if betSuit == 'Pass':
+		canBet = True
+	# but you cannot pass multiple times
+	for i in game_data['allBets']:
+		if i['betSuit'] == 'Pass' and i['betPlayer'] == player:
+			canBet = False
+	if canBet:
+		# yes, it is a valid bet, so we can now process it
+		game_data['allBets'].append({
+			'betPlayer' : player,
+			'betAmount' : betAmount,
+			'betSuit' : betSuit
+		})
+		numPasses = 0
+		for i in game_data['allBets']:
+			if i['betSuit'] == 'Pass':
+				numPasses += 1
+		if numPasses == 3 and len(game_data['allBets']) >= 4:
+			# bet is now confirmed
+			for i in game_data['allBets']:
+				if i['betSuit'] != 'Pass':
+					game_data['betPlayer'] = i['betPlayer']
+					game_data['betAmount'] = i['betAmount']
+					game_data['betSuit'] = i['betSuit']
+			# grab kitty
+			set_trump(game_data['betSuit'])
+			game_data['hands'][game_data['betPlayer']] += game_data['kitty']
+			game_data['kitty'] = []
+		if numPasses == 4:
+			# what a shame, everyone passed
+			game_data['roundOver'] = True
 
 def actionFinishRound(player):
 	if roundFinished():
-		betTeam = game_data['betPlayer'] % 2
-		oppTeam = 1 - betTeam
-		betTricks = game_data['tricks'][betTeam]
-		oppTricks = game_data['tricks'][oppTeam]
-		betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
-		if isMisere(game_data['betSuit']):
-			if betTricks > 0: game_data['score'][betTeam] -= betValue
-			else: game_data['score'][betTeam] += betValue
-		else:
-			if betTricks >= game_data['betAmount']:
-				if betTricks == 10 and 250 > betValue: betValue = 250
-				game_data['score'][betTeam] += betValue
+		# if there was an actual bet, update scores
+		if not game_data['roundOver']:
+			betTeam = game_data['betPlayer'] % 2
+			oppTeam = 1 - betTeam
+			betTricks = game_data['tricks'][betTeam]
+			oppTricks = game_data['tricks'][oppTeam]
+			betValue = getBetValue(game_data['betAmount'], game_data['betSuit'])
+			if isMisere(game_data['betSuit']):
+				if betTricks > 0: game_data['score'][betTeam] -= betValue
+				else: game_data['score'][betTeam] += betValue
 			else:
-				game_data['score'][betTeam] -= betValue
-			game_data['score'][oppTeam] += 10 * oppTricks
+				if betTricks >= game_data['betAmount']:
+					if betTricks == 10 and 250 > betValue: betValue = 250
+					game_data['score'][betTeam] += betValue
+				else:
+					game_data['score'][betTeam] -= betValue
+				game_data['score'][oppTeam] += 10 * oppTricks
 		actionDeal()
 
 def actionChangeName(player):
@@ -309,15 +341,11 @@ def page_action():
 		if action == 'play': actionPlay(card, player)
 		# Completely redeal cards
 		if action == 'redeal': actionDeal()
-		# Grab the kitty
-		if action == 'grab': actionGrab(player)
 		# Clear the table
 		if action == 'clear': actionClear()
 		if action == 'pickup': actionPickup(card, player)
-		# When changing between Misere/Open Misere, and any other type of bet
-		# all the relevant data has to be reset
-		if action == 'setBetAmount': actionSetBetAmount(player)
-		if action == 'setBetSuit': actionSetBetSuit(player)
+		# Add a bet
+		if action == 'setBet': actionSetBet(player)
 		if action == 'finishRound': actionFinishRound(player)
 		if action == 'changeName': actionChangeName(player)
 		# Increment version counter
