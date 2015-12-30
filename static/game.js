@@ -5,7 +5,8 @@ var poll_timer = null;
 var show_trump = 'colour';
 var spectating = false;
 var query_timeout = 2000;
-var can_grab = false;
+var myBetAmount = -1;
+var myBetSuit = '';
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -78,13 +79,14 @@ function makeScoreState(score) {
 	return '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
 }
 
-function makeTrickState(betPlayer, betSuit, tricks) {
+function makeTrickState(betPlayer, betSuit, tricks, roundOver) {
 	var tshtml, my_score = tricks[player_id % 2], other_score = tricks[(player_id + 1) % 2];
 	tshtml = '<p>You: ' + my_score + '<br>Opponents: ' + other_score + '</p>';
-	var canFinishRound = false;
-	if (my_score + other_score == 10) canFinishRound = true;
-	if (isMisere(betSuit) && tricks[betPlayer % 2] > 0) canFinishRound = true;
-	if (canFinishRound) tshtml += '<button onclick="finishRound();">Finish Round</button>';
+	var roundFinished = false;
+	if (my_score + other_score == 10) roundFinished = true;
+	if (isMisere(betSuit) && tricks[betPlayer % 2] > 0) roundFinished = true;
+	if (roundOver) roundFinished = true;
+	if (roundFinished) tshtml += '<button onclick="finishRound();">Finish Round</button>';
 	return tshtml;
 }
 
@@ -106,44 +108,52 @@ function makeHandTable(hand, buttons) {
 	return hand_html
 }
 
-function makeBetHtml(data) {
-	var names = data.names, betPlayer = data.betPlayer, betAmount = data.betAmount,
-		betSuit = data.betSuit, isFixed = data.kitty.length == 0;
-	var betInfo = 'There is no bet';
-	if (betPlayer != -1) {
-		var betValue = 0;
-		betInfo = getDisplayName(names, betPlayer);
-		if (isFixed) betInfo += ' has bet';
-		else betInfo += ' is betting';
-		// calculate bet name
-		if (betAmount != -1) betInfo += ' ' + betAmount;
-		if (betSuit != '') betInfo += ' ' + betSuit;
-		// calculate bet value
-		if (betSuit == 'Misere') betValue = 250;
-		else if (betSuit == 'Open Misere') betValue = 500;
-		else if (betAmount != -1 && betSuit != '') {
-			betValue = 100 * (betAmount - 6);
-			if (betSuit == 'Spades') betValue += 40;
-			if (betSuit == 'Clubs') betValue += 60;
-			if (betSuit == 'Diamonds') betValue += 80;
-			if (betSuit == 'Hearts') betValue += 100;
-			if (betSuit == 'No Trump') betValue += 120;
-		}
-		// betValue == 0 means to not display it
-		if (betValue) betInfo += ' (' + betValue + ' points)';
-		if (isFixed) betInfo = '<strong>' + betInfo + '</strong>';
+function makeBetTextNoPlayer(betAmount, betSuit) {
+	var betValue = 0;
+	var betInfo = '';
+	// calculate bet name
+	if (betAmount != -1) betInfo += ' ' + betAmount;
+	if (betSuit != '') betInfo += ' ' + betSuit;
+	// calculate bet value
+	if (betSuit == 'Misere') betValue = 250;
+	else if (betSuit == 'Open Misere') betValue = 500;
+	else if (betAmount != -1 && betSuit != '') {
+		betValue = 100 * (betAmount - 6);
+		if (betSuit == 'Spades') betValue += 40;
+		if (betSuit == 'Clubs') betValue += 60;
+		if (betSuit == 'Diamonds') betValue += 80;
+		if (betSuit == 'Hearts') betValue += 100;
+		if (betSuit == 'No Trump') betValue += 120;
 	}
+	// betValue == 0 means to not display it
+	if (betValue) betInfo += ' (' + betValue + ' points)';
+	return betInfo;
+}
+
+function makeBetText(betPlayer, betAmount, betSuit, betPlayerName) {
+	if (betPlayer != -1)
+	{
+		var betInfo = 'There is no bet.';
+		var alternative = makeBetTextNoPlayer(betAmount, betSuit);
+		if (alternative != '')
+			betInfo = betPlayerName + ' (' + (betPlayer+1) + ') has bet' + alternative;
+		return betInfo;
+	}
+	return '';
+}
+
+function makeBetTable(all_bets, names) {
+	var betInfo = "";
+	for (i in all_bets) {
+		var thisBet = makeBetText(all_bets[i].betPlayer, all_bets[i].betAmount, all_bets[i].betSuit, names[all_bets[i].betPlayer]);
+		betInfo = "<tr><td>" + thisBet + "</td></tr>" + betInfo;
+	}
+	betInfo = "<table>" + betInfo + "</table>";
 	return betInfo;
 }
 
 function isProperBet(betAmount, betSuit) {
-	return isMisere(betSuit) || (betAmount != -1 && betSuit != '');
-}
-
-function getCanGrab(data) {
-	return data.kitty.length == 3 &&
-		isProperBet(data.betAmount, data.betSuit) &&
-		player_id == data.betPlayer;
+	return isMisere(betSuit) || (betAmount != -1 && betSuit != '') || (betSuit == 'Pass');
 }
 
 function updateSpectatorView(data, status) {
@@ -157,9 +167,15 @@ function updateSpectatorView(data, status) {
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i]), false);
 		}
-		$("#playedCards").html(makeTableTable(data.table, false, data.names));
+		if (data.kitty.length == 0)
+			$("#playedCards").html(makeTableTable(data.table, false, data.names));
+		else
+			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").html(makeBetHtml(data));
+		if (data.betPlayer == -1)
+			$("#betInfo").text('There is no bet.');
+		else
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
 		$("#team1Score").text(data.score[0]+'');
 		$("#team2Score").text(data.score[1]+'');
 		$("#team1Tricks").text(data.tricks[0]+'');
@@ -177,12 +193,21 @@ function updateGameView(data, status) {
 		$("#yourName").text("You are " + getDisplayName(data.names, player_id));
 		$('#kittyCards').text(data.kitty.length + ' cards');
 		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
-		$("#playedCards").html(makeTableTable(data.table, true, data.names));
+		if (data.kitty.length == 0) // bet exists so in play mode
+			$("#playedCards").html(makeTableTable(data.table, true, data.names));
+		else // in betting phase, display bets on table
+			$("#playedCards").html(makeBetTable(data.allBets, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").html(makeBetHtml(data));
+		if (data.kitty.length == 0) { // bet exists and is confirmed
+			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names[data.betPlayer]));
+		} else { // still in betting phase
+			var betInfoHtml = "You are considering betting "+makeBetTextNoPlayer(myBetAmount, myBetSuit);
+			if (isProperBet(myBetAmount, myBetSuit))
+				betInfoHtml = betInfoHtml + " <button onclick=confirmBet()>Confirm</button>";
+			$("#betInfo").html(betInfoHtml);
+		}
 		$("#scoreState").html(makeScoreState(data.score));
-		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
-		can_grab = getCanGrab(data);
+		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks, data.roundOver));
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -246,34 +271,45 @@ function actionRedeal() {
 	}
 }
 
-function actionGrab() {
-	if (can_grab) {
-		var query = window.confirm("Grab the kitty? You will no longer be able to change the bet.");
-		if (query) {
-			uniAction('grab');
-		}
-	}
-}
-
 function uniAction(action_name) {
 	window.clearTimeout(poll_timer);
 	postAction({'action': action_name});
 }
 
 function setBetAmount(betAmount) {
-	window.clearTimeout(poll_timer);
-	postAction({
-		'action': 'setBetAmount',
-		'betAmount': betAmount
-	});
+	if (player_id != -1)
+	{
+		last_gamedata_version = -1;
+		myBetAmount = betAmount;
+		if (isMisere(myBetSuit) || myBetSuit == 'Pass')
+			myBetSuit = '';
+	}
 }
 
 function setBetSuit(betSuit) {
+	if (player_id != -1)
+	{
+		last_gamedata_version = -1;
+		myBetSuit = betSuit;
+		if (isMisere(betSuit) || betSuit == 'Pass')
+			myBetAmount = -1;
+	}
+}
+
+function confirmBet() {
 	window.clearTimeout(poll_timer);
-	postAction({
-		'action': 'setBetSuit',
-		'betSuit': betSuit
-	});
+	if (player_id != -1)
+	{
+		last_gamedata_version = -1;
+		if (isProperBet(myBetAmount, myBetSuit))
+		{
+			postAction({
+				'action': 'setBet',
+				'betAmount': myBetAmount,
+				'betSuit': myBetSuit
+			});
+		}
+	}
 }
 
 function finishRound() {
