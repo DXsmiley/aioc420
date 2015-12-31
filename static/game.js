@@ -7,6 +7,7 @@ var spectating = false;
 var query_timeout = 2000;
 var myBetAmount = -1;
 var myBetSuit = '';
+var viewing_opponent = false;
 
 function isMisere(betSuit) {
 	return betSuit == 'Misere' || betSuit == 'Open Misere';
@@ -91,7 +92,7 @@ function makeTrickState(betPlayer, betSuit, tricks, roundOver) {
 }
 
 function makeHandTable(hand, buttons) {
-	var hand_html = '<table>';
+	var hand_html = '<table class=\"hands\">';
 	for (i in hand) {
 		hand_html += '<tr>';
 		hand_html += '<td>' + makeCardText(hand[i]) + '</td>';
@@ -182,12 +183,41 @@ function updateGameView(data, status) {
 		data.floor.reverse();
 		$("#yourName").text("You are " + getDisplayName(data.names, player_id));
 		$('#kittyCards').text(data.kitty.length + ' cards');
-		$("#myCards").html(makeHandTable(data.hands[player_id], data.kitty.length == 0));
+
+		// Support for open misere
+		var can_see_opponent = false;
+		if (data.betSuit == 'Open Misere' && data.betPlayer != player_id) {
+			// somebody else has bet open misere
+			// make sure they have already discarded kitty
+			if (data.hands[data.betPlayer].length <= 10) {
+				// but maybe the table still has the kitty
+				if (data.table.length == 0) {
+					// there is nothing on the table so all g
+					can_see_opponent = true;
+				} else if (data.table[0].state != 'discarded') {
+					// the cards on the table are not the kitty
+					can_see_opponent = true;
+				}
+			}
+		}
+		if (!can_see_opponent) viewing_opponent = false;
+		var my_hand_html = makeHandTable(data.hands[player_id], data.kitty.length == 0);
+		if (viewing_opponent)
+			my_hand_html = makeHandTable(data.hands[data.betPlayer], false);
+		if (can_see_opponent)
+			my_hand_html = my_hand_html + "<br><button onclick=\"changeView();\">Change view</button>";
+		$("#myCards").html(my_hand_html);
+
+		if (viewing_opponent) $("#myCardsTitle").text("Opponent's hand");
+		else $("#myCardsTitle").text("Your hand");
+
 		if (data.kitty.length == 0) // bet exists so in play mode
 			$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		else // in betting phase, display bets on table
 			$("#playedCards").html(makeBetTable(data.allBets, data.names));
+
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
+
 		if (data.kitty.length == 0) { // bet exists and is confirmed
 			$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit, data.names));
 			myBetAmount = -1; // reset things
@@ -335,6 +365,12 @@ function nameIsValid(name) {
 		if (allowed_chars.indexOf(name[i]) === -1) valid = false;
 	}
 	return valid;
+}
+
+function changeView() {
+	viewing_opponent = !viewing_opponent;
+	last_gamedata_version = -1;
+	getGameData();
 }
 
 function changeName() {
