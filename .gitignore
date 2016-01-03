@@ -61,3 +61,6 @@ target/
 
 # save files
 game_state.json
+
+# Sublime Project Files
+*.sublime*
