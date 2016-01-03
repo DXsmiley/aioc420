@@ -27,6 +27,11 @@ function getTrump(betSuit) {
 	else return betSuit;
 }
 
+function getDisplayName(names, i) {
+	if (0 <= i && i < 4) return names[i] + ' (' + (i+1) + ')';
+	else return 'Invalid Player (tell someone to fix this ~_~) (' + (i+1) + ')';
+}
+
 function makeCardText(cardname) {
 	var result = cardname;
 	var is_trump = false;
@@ -56,7 +61,6 @@ function makeTableTable(cards, can_discard, names) {
 	var played_html = '<table>';
 	for (i in cards) {
 		var pid = cards[i].player;
-		var pname = names[pid];
 		var card = cards[i].card;
 		var cardname = card;
 		if (cards[i].state == 'discarded') {
@@ -65,7 +69,7 @@ function makeTableTable(cards, can_discard, names) {
 		}
 		played_html += '<tr><td>';
 		if (cards[i].winning) played_html += '<strong>';
-		played_html += pname + " (" + (pid+1) + "): " + makeCardText(cardname);
+		played_html += getDisplayName(names, pid) + ": " + makeCardText(cardname);
 		if (cards[i].winning) played_html += '</strong>';
 		played_html += '</td>';
 		if (pid == player_id && can_discard) {
@@ -131,11 +135,15 @@ function makeHandTable(hand, buttons, leading_suit, already_played) {
 	return hand_html
 }
 
-function makeBetText(betPlayer, betAmount, betSuit) {
+function makeBetHtml(data) {
+	var names = data.names, betPlayer = data.betPlayer, betAmount = data.betAmount,
+		betSuit = data.betSuit, isFixed = data.kitty.length == 0;
 	var betInfo = 'There is no bet';
 	if (betPlayer != -1) {
 		var betValue = 0;
-		betInfo = 'Player ' + (betPlayer + 1) + ' has bet';
+		betInfo = getDisplayName(names, betPlayer);
+		if (isFixed) betInfo += ' has bet';
+		else betInfo += ' is betting';
 		// calculate bet name
 		if (betAmount != -1) betInfo += ' ' + betAmount;
 		if (betSuit != '') betInfo += ' ' + betSuit;
@@ -152,6 +160,7 @@ function makeBetText(betPlayer, betAmount, betSuit) {
 		}
 		// betValue == 0 means to not display it
 		if (betValue) betInfo += ' (' + betValue + ' points)';
+		if (isFixed) betInfo = '<strong>' + betInfo + '</strong>';
 	}
 	return betInfo;
 }
@@ -172,18 +181,18 @@ function updateSpectatorView(data, status) {
 		data.table.reverse();
 		data.floor.reverse();
 		for (var i = 0; i < 4; i++) {
-			var name_id = "#player" + (i + 1) + "Name";
-			$(name_id).html(data.names[i] + ' (' + (i + 1) + ')');
+			var name_class = ".player" + (i + 1) + "Name";
+			$(name_class).html(getDisplayName(data.names, i));
 			var obj_id = "#player" + (i + 1) + "Cards";
 			$(obj_id).html(makeHandTable(data.hands[i], false, 'none', false));
 		}
 		$("#playedCards").html(makeTableTable(data.table, false, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
-		$("#player1Score").text(data.tricks[0] + ' tricks');
-		$("#player2Score").text(data.tricks[1] + ' tricks');
-		$("#player3Score").text(data.tricks[0] + ' tricks');
-		$("#player4Score").text(data.tricks[1] + ' tricks');
+		$("#betInfo").html(makeBetHtml(data));
+		$("#team1Score").text(data.score[0]+'');
+		$("#team2Score").text(data.score[1]+'');
+		$("#team1Tricks").text(data.tricks[0]+'');
+		$("#team2Tricks").text(data.tricks[1]+'');
 		last_gamedata_version = data.version_id;
 	}
 }
@@ -195,7 +204,7 @@ function updateGameView(data, status) {
 		var leading_suit = data.table.length == 0 ? null : getCardSuit(data.table[0]['card']);
 		data.table.reverse();
 		data.floor.reverse();
-		$("#yourName").text("You are " + data.names[player_id] + " ("+(player_id + 1)+")");
+		$("#yourName").text("You are " + getDisplayName(data.names, player_id));
 		$('#kittyCards').text(data.kitty.length + ' cards');
 		$("#myCards").html(makeHandTable(
 			data.hands[player_id],
@@ -205,7 +214,7 @@ function updateGameView(data, status) {
 		));
 		$("#playedCards").html(makeTableTable(data.table, true, data.names));
 		$("#floorCards").html(makeTableTable(data.floor, false, data.names));
-		$("#betInfo").text(makeBetText(data.betPlayer, data.betAmount, data.betSuit));
+		$("#betInfo").html(makeBetHtml(data));
 		$("#scoreState").html(makeScoreState(data.score));
 		$("#trickState").html(makeTrickState(data.betPlayer, data.betSuit, data.tricks));
 		$("#buttonGrab").prop('disabled', !getCanGrab(data));
@@ -248,7 +257,7 @@ function changePlayer(pid) {
 	// As soon as we become an actual player, we can click on these buttons.
 	$("#buttonClear").prop("disabled", false);
 	$("#buttonRedeal").prop("disabled", false);
-	$("#buttonRename").prop("disabled", false)
+	$("#buttonRename").prop("disabled", false);
 	player_id = pid;
 	last_gamedata_version = -1;
 	getGameData();
@@ -326,28 +335,28 @@ function setTrumpDisplay(displayType) {
 	getGameData();
 }
 
+function nameIsValid(name) {
+	var allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_';
+	var valid = name.length <= 20;
+	for (i in name) {
+		if (allowed_chars.indexOf(name[i]) === -1) valid = false;
+	}
+	return valid;
+}
+
 function changeName() {
 	if (player_id != -1) {
 		var name = prompt("Please enter your name:");
-		var valid = true;
-		for (var i = 0; i < name.length; i++) {
-			var charvalid = false;
-			if (('a' <= name[i] && name[i] <= 'z') ||
-					('A' <= name[i] && name[i] <= 'Z') ||
-					('0' <= name[i] && name[i] <= '9'))
-			{
-				charvalid = true;
-			}
-			if (!charvalid) valid = false;
-		}
-		if (valid) {
-			$("#yourName").text("You are " + name + " ("+(player_id + 1)+")");
-			postAction({
+		if (name) { // checks if the user pressed cancel
+			if (nameIsValid(name)) {
+				$("#yourName").text("You are " + name + " (" + (player_id + 1) + ")");
+				postAction({
 					'action': 'changeName',
 					'name': name
-					});
-		} else {
-			window.alert("Only use letters and numbers.");
+				});
+			} else {
+				window.alert("Only use alphanumeric characters. Maximum length is 20 characters.");
+			}
 		}
 	}
 }

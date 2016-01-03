@@ -4,8 +4,6 @@ import sys
 import json
 import copy
 
-# 420 blaze it gongy is learning
-
 deck_init = ["Joker", "5 of Clubs", "6 of Clubs", "7 of Clubs",
 			"8 of Clubs", "9 of Clubs", "10 of Clubs", "Jack of Clubs",
 			"Queen of Clubs", "King of Clubs", "Ace of Clubs",
@@ -105,14 +103,8 @@ def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
 def isValidName(name):
-	validName = True
-	for c in name:
-		validChar = False
-		if 'a' <= c and c <= 'z': validChar = True
-		if 'A' <= c and c <= 'Z': validChar = True
-		if '0' <= c and c <= '9': validChar = True
-		if not validChar: validName = False
-	return validName
+	allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_'
+	return all(i in allowed_chars for i in name) and len(name) <= 20
 
 # Thanks, Gongy!
 def actionDeal():
@@ -173,30 +165,35 @@ def page_action():
 	if 0 <= player < 4:
 		# Play or discard a card
 		if action == 'play':
-			if card in game_data['hands'][player]:
-				if len(game_data['hands'][player]) <= 10:
-					# in this case, play a card
-					# make sure that only one card is played per turn
-					can_play = True
-					for i in game_data['table']:
-						if i['player'] == player:
+			# prevent betting player's teammate from playing during misere-type bets
+			if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
+				if card in game_data['hands'][player]:
+					if len(game_data['hands'][player]) <= 10:
+						# in this case, play a card
+						# make sure that only one card is played per turn
+						# and make sure no one plays during kitty discarding
+						can_play = True
+						for i in game_data['table']:
+							if i['player'] == player or i['state'] == 'discarded':
+								can_play = False
+						if len(game_data['hands'][game_data['betPlayer']]) > 10:
 							can_play = False
-					if can_play:
+						if can_play:
+							game_data['table'].append({
+								'player': player,
+								'card': card,
+								'state': 'normal'
+								})
+							game_data['hands'][player].remove(card)
+							markWinningCard()
+					else:
+						# in this case, discard
+						game_data['hands'][player].remove(card)
 						game_data['table'].append({
 							'player': player,
 							'card': card,
-							'state': 'normal'
-							})
-						game_data['hands'][player].remove(card)
-						markWinningCard()
-				else:
-					# in this case, discard
-					game_data['hands'][player].remove(card)
-					game_data['table'].append({
-						'player': player,
-						'card': card,
-						'state': 'discarded'
-					})
+							'state': 'discarded'
+						})
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
@@ -225,7 +222,6 @@ def page_action():
 							else:
 								game_data['tricks'][1] += 1
 					game_data['floor'] = game_data['table']
-					game_data['floor'].reverse();
 					game_data['table'] = []
 					# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
@@ -289,13 +285,19 @@ def page_action():
 				else:
 					if game_data['betPlayer'] == 0 or game_data['betPlayer'] == 2:
 						if game_data['tricks'][0] >= game_data['betAmount']:
-							game_data['score'][0] += betValue
+							if game_data['tricks'][0] == 10: # slam
+								game_data['score'][0] += max(betValue, 250)
+							else:
+								game_data['score'][0] += betValue
 						else:
 							game_data['score'][0] -= betValue
 						game_data['score'][1] += 10 * game_data['tricks'][1]
 					else:
 						if game_data['tricks'][1] >= game_data['betAmount']:
-							game_data['score'][1] += betValue
+							if game_data['tricks'][1] == 10: # slam
+								game_data['score'][1] += max(betValue, 250)
+							else:
+								game_data['score'][1] += betValue
 						else:
 							game_data['score'][1] -= betValue
 						game_data['score'][0] += 10 * game_data['tricks'][0]
