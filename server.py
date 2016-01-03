@@ -104,6 +104,10 @@ def getBetValue(betAmount, betSuit):
 def isProperBet(betAmount, betSuit):
 	return isMisere(betSuit) or (betAmount != -1 and betSuit != '')
 
+def isValidName(name):
+	allowed_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 -_'
+	return all(i in allowed_chars for i in name) and len(name) <= 20
+
 # Thanks, Gongy!
 def actionDeal():
 	print('Dealing...')
@@ -163,30 +167,35 @@ def page_action():
 	if 0 <= player < 4:
 		# Play or discard a card
 		if action == 'play':
-			if card in game_data['hands'][player]:
-				if len(game_data['hands'][player]) <= 10:
-					# in this case, play a card
-					# make sure that only one card is played per turn
-					can_play = True
-					for i in game_data['table']:
-						if i['player'] == player:
+			# prevent betting player's teammate from playing during misere-type bets
+			if not (isMisere(game_data['betSuit']) and player == (game_data['betPlayer'] + 2) % 4):
+				if card in game_data['hands'][player]:
+					if len(game_data['hands'][player]) <= 10:
+						# in this case, play a card
+						# make sure that only one card is played per turn
+						# and make sure no one plays during kitty discarding
+						can_play = True
+						for i in game_data['table']:
+							if i['player'] == player or i['state'] == 'discarded':
+								can_play = False
+						if len(game_data['hands'][game_data['betPlayer']]) > 10:
 							can_play = False
-					if can_play:
+						if can_play:
+							game_data['table'].append({
+								'player': player,
+								'card': card,
+								'state': 'normal'
+								})
+							game_data['hands'][player].remove(card)
+							markWinningCard()
+					else:
+						# in this case, discard
+						game_data['hands'][player].remove(card)
 						game_data['table'].append({
 							'player': player,
 							'card': card,
-							'state': 'normal'
-							})
-						game_data['hands'][player].remove(card)
-						markWinningCard()
-				else:
-					# in this case, discard
-					game_data['hands'][player].remove(card)
-					game_data['table'].append({
-						'player': player,
-						'card': card,
-						'state': 'discarded'
-					})
+							'state': 'discarded'
+						})
 		# Completely redeal cards
 		if action == 'redeal':
 			actionDeal()
@@ -215,7 +224,6 @@ def page_action():
 							else:
 								game_data['tricks'][1] += 1
 					game_data['floor'] = game_data['table']
-					game_data['floor'].reverse();
 					game_data['table'] = []
 					# game_data['table'] = [-1] * len(game_data['table'])
 		if action == 'pickup':
@@ -297,7 +305,9 @@ def page_action():
 						game_data['score'][0] += 10 * game_data['tricks'][0]
 				game_data['tricks'][0] = game_data['tricks'][1] = 0
 		if action == 'changeName':
-			game_data['names'][player] = bottle.request.forms.get('name')
+			name = bottle.request.forms.get('name')
+			if isValidName(name):
+				game_data['names'][player] = name
 		# Increment version counter
 		game_data['version_id'] += 1
 		# Save it to disk
@@ -328,6 +338,7 @@ if do_save_data:
 		with open('game_state.json') as f:
 			# You can actually put anything you want in that file...
 			game_data = json.loads(f.read())
+			set_trump(getTrump(game_data['betSuit']))
 	except FileNotFoundError:
 		print('State file does not exist.')
 
