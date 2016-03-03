@@ -122,7 +122,7 @@ function makeBetTextNoPlayer(betAmount, betSuit) {
 		betValue = 100 * (betAmount - 6);
 		if (betSuit == 'Spades') betValue += 40;
 		if (betSuit == 'Clubs') betValue += 60;
-		if (betSuit == 'Diamonds') betValue += 80;
+		if (betSuit == 'Diamonds') betValue += 80;a
 		if (betSuit == 'Hearts') betValue += 100;
 		if (betSuit == 'No Trump') betValue += 120;
 	}
@@ -346,6 +346,7 @@ function getGameData() {
 	$.ajax({
 		'type': 'GET',
 		'url': '/gamestate',
+		'dataType': 'json',
 		'timeout': query_timeout,
 		'success': updateTheView,
 		'error': handleUpdateError,
