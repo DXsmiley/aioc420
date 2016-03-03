@@ -122,7 +122,7 @@ function makeBetTextNoPlayer(betAmount, betSuit) {
 		betValue = 100 * (betAmount - 6);
 		if (betSuit == 'Spades') betValue += 40;
 		if (betSuit == 'Clubs') betValue += 60;
-		if (betSuit == 'Diamonds') betValue += 80;a
+		if (betSuit == 'Diamonds') betValue += 80;
 		if (betSuit == 'Hearts') betValue += 100;
 		if (betSuit == 'No Trump') betValue += 120;
 	}
