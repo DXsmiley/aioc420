@@ -346,6 +346,7 @@ function getGameData() {
 	$.ajax({
 		'type': 'GET',
 		'url': '/gamestate',
+		'dataType': 'json',
 		'timeout': query_timeout,
 		'success': updateTheView,
 		'error': handleUpdateError,
